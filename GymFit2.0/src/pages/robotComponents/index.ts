@@ -1,0 +1,3 @@
+
+
+export { RobotComponent } from './RobotComponent'
