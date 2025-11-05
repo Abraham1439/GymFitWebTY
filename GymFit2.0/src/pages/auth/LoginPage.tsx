@@ -38,6 +38,43 @@ export const LoginPage = () => {
   // Estado para controlar si la contraseña está visible o no
   const [showPassword, setShowPassword] = useState<boolean>(false); // false = oculta la contraseña
 
+  // Estado para errores de validación en tiempo real
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
+
+  /**
+   * Valida un campo en tiempo real
+   * @param name - Nombre del campo
+   * @param value - Valor del campo
+   */
+  const validateField = (name: string, value: string): void => {
+    const errors = { ...fieldErrors };
+
+    if (name === 'email') {
+      if (!value.trim()) {
+        errors.email = 'El email es requerido';
+      } else if (!isValidEmail(value)) {
+        errors.email = 'Por favor ingresa un email valido';
+      } else {
+        delete errors.email;
+      }
+    }
+
+    if (name === 'password') {
+      if (!value.trim()) {
+        errors.password = 'La contraseña es requerida';
+      } else if (value.length < 6) {
+        errors.password = 'La contraseña debe tener al menos 6 caracteres';
+      } else {
+        delete errors.password;
+      }
+    }
+
+    setFieldErrors(errors);
+  };
+
   /**
    * Maneja el cambio en los campos del formulario
    * @param e - Evento de cambio del input
@@ -53,6 +90,9 @@ export const LoginPage = () => {
       ...prev,                    // Spread operator: Copia todas las propiedades anteriores
       [name]: value               // Computed property name: Actualiza solo el campo que cambió
     }));
+
+    // Valida el campo en tiempo real
+    validateField(name, value);
 
     // Limpia el error cuando el usuario empieza a escribir
     if (error) {
@@ -145,8 +185,16 @@ export const LoginPage = () => {
                 placeholder="tu@email.com"      // placeholder: Texto de ejemplo
                 value={formData.email}           // value: Valor controlado del input
                 onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                onBlur={(e) => validateField('email', e.target.value)} // onBlur: Valida al salir del campo
+                isInvalid={!!fieldErrors.email}  // isInvalid: Marca el campo como inválido
                 required                         // required: Atributo HTML5 para validación
               />
+              {/* Form.Control.Feedback: Muestra mensaje de error */}
+              {fieldErrors.email && (
+                <Form.Control.Feedback type="invalid">
+                  {fieldErrors.email}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -159,6 +207,8 @@ export const LoginPage = () => {
                   placeholder="Tu contraseña"      // placeholder: Texto de ejemplo
                   value={formData.password}         // value: Valor controlado del input
                   onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                  onBlur={(e) => validateField('password', e.target.value)} // onBlur: Valida al salir del campo
+                  isInvalid={!!fieldErrors.password} // isInvalid: Marca el campo como inválido
                   required                         // required: Atributo HTML5 para validación
                 />
                 {/* Button: Botón para mostrar/ocultar contraseña */}
@@ -170,6 +220,12 @@ export const LoginPage = () => {
                   {/* Ícono de Font Awesome: cambia según el estado */}
                   <i className={showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'}></i>
                 </Button>
+                {/* Form.Control.Feedback: Muestra mensaje de error */}
+                {fieldErrors.password && (
+                  <Form.Control.Feedback type="invalid">
+                    {fieldErrors.password}
+                  </Form.Control.Feedback>
+                )}
               </InputGroup>
             </Form.Group>
 

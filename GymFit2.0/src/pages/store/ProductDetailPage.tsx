@@ -13,8 +13,8 @@ import {
   Button,
   Badge,
   Alert,
-  Breadcrumb,
 } from 'react-bootstrap';
+import { Breadcrumbs } from '../sharedComponents/Breadcrumbs';
 
 // Importación de hooks y helpers
 import { useCart } from '../../contexts/CartContext';
@@ -168,17 +168,9 @@ export const ProductDetailPage = () => {
   // JSX: Sintaxis de JavaScript que permite escribir HTML en JavaScript
   return (
     <Container fluid className="p-0" style={{ marginTop: 0, paddingTop: 0 }}>
-      {/* Breadcrumb: Navegación de ruta */}
+      {/* Breadcrumbs: Navegacion mejorada */}
       <Container className="pt-3">
-        <Breadcrumb>
-          <Breadcrumb.Item onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            Inicio
-          </Breadcrumb.Item>
-          <Breadcrumb.Item onClick={() => navigate('/store')} style={{ cursor: 'pointer' }}>
-            Tienda
-          </Breadcrumb.Item>
-          <Breadcrumb.Item active>{product.name}</Breadcrumb.Item>
-        </Breadcrumb>
+        <Breadcrumbs />
       </Container>
 
       {/* Container: Contenedor principal del contenido */}

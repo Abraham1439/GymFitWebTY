@@ -48,6 +48,73 @@ export const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false); // false = oculta la contraseña
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false); // false = oculta la confirmación
 
+  // Estado para errores de validación en tiempo real
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
+
+  /**
+   * Valida un campo en tiempo real
+   * @param name - Nombre del campo
+   * @param value - Valor del campo
+   */
+  const validateField = (name: string, value: string): void => {
+    const errors = { ...fieldErrors };
+
+    if (name === 'name') {
+      if (!value.trim()) {
+        errors.name = 'El nombre es requerido';
+      } else if (value.trim().length < 2) {
+        errors.name = 'El nombre debe tener al menos 2 caracteres';
+      } else {
+        delete errors.name;
+      }
+    }
+
+    if (name === 'email') {
+      if (!value.trim()) {
+        errors.email = 'El email es requerido';
+      } else if (!isValidEmail(value)) {
+        errors.email = 'Por favor ingresa un email valido';
+      } else {
+        delete errors.email;
+      }
+    }
+
+    if (name === 'password') {
+      if (!value.trim()) {
+        errors.password = 'La contraseña es requerida';
+      } else if (!isValidPassword(value)) {
+        errors.password = 'La contraseña debe tener al menos 6 caracteres';
+      } else {
+        delete errors.password;
+      }
+      // Si hay confirmPassword, también validar que coincidan
+      if (formData.confirmPassword) {
+        if (!passwordsMatch(value, formData.confirmPassword)) {
+          errors.confirmPassword = 'Las contraseñas no coinciden';
+        } else {
+          delete errors.confirmPassword;
+        }
+      }
+    }
+
+    if (name === 'confirmPassword') {
+      if (!value.trim()) {
+        errors.confirmPassword = 'Por favor confirma tu contraseña';
+      } else if (!passwordsMatch(formData.password, value)) {
+        errors.confirmPassword = 'Las contraseñas no coinciden';
+      } else {
+        delete errors.confirmPassword;
+      }
+    }
+
+    setFieldErrors(errors);
+  };
+
   /**
    * Maneja el cambio en los campos del formulario
    * @param e - Evento de cambio del input
@@ -63,6 +130,9 @@ export const RegisterPage = () => {
       ...prev,                    // Spread operator: Copia todas las propiedades anteriores
       [name]: value               // Computed property name: Actualiza solo el campo que cambió
     }));
+
+    // Valida el campo en tiempo real
+    validateField(name, value);
 
     // Limpia los mensajes cuando el usuario empieza a escribir
     if (error) {
@@ -186,8 +256,16 @@ export const RegisterPage = () => {
                 placeholder="Tu nombre completo" // placeholder: Texto de ejemplo
                 value={formData.name}            // value: Valor controlado del input
                 onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                onBlur={(e) => validateField('name', e.target.value)} // onBlur: Valida al salir del campo
+                isInvalid={!!fieldErrors.name}  // isInvalid: Marca el campo como inválido
                 required                         // required: Atributo HTML5 para validación
               />
+              {/* Form.Control.Feedback: Muestra mensaje de error */}
+              {fieldErrors.name && (
+                <Form.Control.Feedback type="invalid">
+                  {fieldErrors.name}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -198,8 +276,16 @@ export const RegisterPage = () => {
                 placeholder="tu@email.com"      // placeholder: Texto de ejemplo
                 value={formData.email}           // value: Valor controlado del input
                 onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                onBlur={(e) => validateField('email', e.target.value)} // onBlur: Valida al salir del campo
+                isInvalid={!!fieldErrors.email}  // isInvalid: Marca el campo como inválido
                 required                         // required: Atributo HTML5 para validación
               />
+              {/* Form.Control.Feedback: Muestra mensaje de error */}
+              {fieldErrors.email && (
+                <Form.Control.Feedback type="invalid">
+                  {fieldErrors.email}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -209,9 +295,11 @@ export const RegisterPage = () => {
                 <Form.Control
                   type={showPassword ? 'text' : 'password'} // type: Alterna entre 'text' y 'password'
                   name="password"                  // name: Nombre del campo
-                  placeholder="Mínimo 6 caracteres" // placeholder: Texto de ejemplo
+                  placeholder="Minimo 6 caracteres" // placeholder: Texto de ejemplo
                   value={formData.password}        // value: Valor controlado del input
                   onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                  onBlur={(e) => validateField('password', e.target.value)} // onBlur: Valida al salir del campo
+                  isInvalid={!!fieldErrors.password} // isInvalid: Marca el campo como inválido
                   required                         // required: Atributo HTML5 para validación
                 />
                 {/* Button: Botón para mostrar/ocultar contraseña */}
@@ -223,6 +311,12 @@ export const RegisterPage = () => {
                   {/* Ícono de Font Awesome: cambia según el estado */}
                   <i className={showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'}></i>
                 </Button>
+                {/* Form.Control.Feedback: Muestra mensaje de error */}
+                {fieldErrors.password && (
+                  <Form.Control.Feedback type="invalid">
+                    {fieldErrors.password}
+                  </Form.Control.Feedback>
+                )}
               </InputGroup>
             </Form.Group>
 
@@ -236,6 +330,8 @@ export const RegisterPage = () => {
                   placeholder="Repite tu contraseña" // placeholder: Texto de ejemplo
                   value={formData.confirmPassword}  // value: Valor controlado del input
                   onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                  onBlur={(e) => validateField('confirmPassword', e.target.value)} // onBlur: Valida al salir del campo
+                  isInvalid={!!fieldErrors.confirmPassword} // isInvalid: Marca el campo como inválido
                   required                         // required: Atributo HTML5 para validación
                 />
                 {/* Button: Botón para mostrar/ocultar confirmación de contraseña */}
@@ -247,6 +343,12 @@ export const RegisterPage = () => {
                   {/* Ícono de Font Awesome: cambia según el estado */}
                   <i className={showConfirmPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'}></i>
                 </Button>
+                {/* Form.Control.Feedback: Muestra mensaje de error */}
+                {fieldErrors.confirmPassword && (
+                  <Form.Control.Feedback type="invalid">
+                    {fieldErrors.confirmPassword}
+                  </Form.Control.Feedback>
+                )}
               </InputGroup>
             </Form.Group>
 

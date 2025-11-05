@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 // useNavigate: Hook de react-router-dom para navegación programática
 import { useNavigate } from 'react-router-dom';
 // Importación de componentes de Bootstrap
-import { Container, Row, Col, Card, Button, Badge, Alert, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, Alert, Form, InputGroup } from 'react-bootstrap';
+// Importación de componentes compartidos
+import { Breadcrumbs } from '../sharedComponents/Breadcrumbs';
 
 // Importación de hooks y helpers
 import { useCart } from '../../contexts/CartContext';
@@ -35,6 +37,9 @@ export const StorePage = () => {
 
   // Estado para filtro de categoría
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'accessory' | 'supplement'>('all'); // 'all' = todas las categorías
+
+  // Estado para búsqueda por texto
+  const [searchQuery, setSearchQuery] = useState<string>(''); // String vacío = sin búsqueda
 
   // useEffect: Hook de React que ejecuta efectos secundarios
   // Efecto que se ejecuta al montar el componente para cargar productos
@@ -205,17 +210,43 @@ export const StorePage = () => {
   };
 
   /**
-   * Filtra los productos por categoría
+   * Normaliza una cadena removiendo acentos y convirtiendo a minúsculas
+   * @param str - Cadena a normalizar
+   * @returns Cadena normalizada sin acentos y en minúsculas
+   */
+  const normalizeString = (str: string): string => {
+    return str
+      .toLowerCase()
+      .normalize('NFD') // Normaliza a Forma de Descomposición (NFD)
+      .replace(/[\u0300-\u036f]/g, ''); // Elimina los caracteres diacríticos (acentos)
+  };
+
+  /**
+   * Filtra los productos por múltiples criterios: categoría y búsqueda de texto
    * @returns Array de productos filtrados
    */
   const filteredProducts = (): Product[] => {
-    // Si el filtro es 'all', retorna todos los productos
-    if (categoryFilter === 'all') {
-      return products;
+    let filtered = [...products];
+
+    // Filtro por categoría
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter((p) => p.category === categoryFilter);
     }
-    // Si no, filtra por categoría
-    // filter: Método de array que retorna elementos que cumplen una condición
-    return products.filter((p) => p.category === categoryFilter);
+
+    // Filtro por búsqueda de texto (nombre o descripción) - ignora acentos
+    if (searchQuery.trim() !== '') {
+      const normalizedQuery = normalizeString(searchQuery.trim());
+      filtered = filtered.filter((p) => {
+        const normalizedName = normalizeString(p.name);
+        const normalizedDescription = normalizeString(p.description);
+        return (
+          normalizedName.includes(normalizedQuery) ||
+          normalizedDescription.includes(normalizedQuery)
+        );
+      });
+    }
+
+    return filtered;
   };
 
   // JSX: Sintaxis de JavaScript que permite escribir HTML en JavaScript
@@ -262,6 +293,8 @@ export const StorePage = () => {
 
       {/* Container: Contenedor principal del contenido */}
       <Container className="pt-1 pb-4">
+        {/* Breadcrumbs: Navegacion mejorada */}
+        <Breadcrumbs />
         {/* Row: Componente de Bootstrap para crear filas */}
         <Row>
           {/* Col: Componente de Bootstrap para crear columnas */}
@@ -275,16 +308,40 @@ export const StorePage = () => {
           )}
 
           {/* Form.Group: Componente de Bootstrap para agrupar elementos del formulario */}
+          
+          {/* Búsqueda por texto */}
+          <Form.Group className="mb-3">
+            <Form.Label>
+              <i className="fa-solid fa-search me-2"></i>
+              Buscar productos:
+            </Form.Label>
+            <InputGroup>
+              <Form.Control
+                type="text"
+                placeholder="Buscar por nombre o descripcion..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <Button
+                  variant="outline-secondary"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Limpiar busqueda"
+                >
+                  <i className="fa-solid fa-times"></i>
+                </Button>
+              )}
+            </InputGroup>
+          </Form.Group>
+
+          {/* Filtro: Categoría */}
           <Form.Group className="mb-4">
-            <Form.Label>Filtrar por categoría:</Form.Label>
-            {/* Form.Select: Componente de Bootstrap para select (dropdown) */}
-            {/* value: Valor controlado del select */}
-            {/* onChange: Actualiza el filtro */}
+            <Form.Label>Filtrar por categoria:</Form.Label>
             <Form.Select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value as 'all' | 'accessory' | 'supplement')}
             >
-              <option value="all">Todas las categorías</option>
+              <option value="all">Todas las categorias</option>
               <option value="accessory">Accesorios</option>
               <option value="supplement">Suplementos</option>
             </Form.Select>
