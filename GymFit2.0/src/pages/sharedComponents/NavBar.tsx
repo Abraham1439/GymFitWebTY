@@ -4,10 +4,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 // useNavigate: Hook de react-router-dom para navegación programática
 // useLocation: Hook de react-router-dom para obtener la ruta actual
 // Importación de componentes de Bootstrap
-import { Navbar, Nav, NavDropdown, Container, Button } from 'react-bootstrap';
+import { Navbar, Nav, NavDropdown, Container, Button, Badge } from 'react-bootstrap';
 
 // Importación del hook de autenticación
 import { useAuth } from '../../contexts/AuthContext';
+// Importación del hook del carrito
+import { useCart } from '../../contexts/CartContext';
 // Importación de tipos e interfaces
 import { UserRole } from '../../interfaces/gym.interfaces';
 
@@ -22,6 +24,9 @@ export const NavBar = () => {
   
   // useAuth: Hook personalizado que retorna los datos y funciones de autenticación
   const { authData, logout } = useAuth();
+  
+  // useCart: Hook personalizado que retorna las funciones del carrito
+  const { getTotalItems } = useCart();
 
   /**
    * Maneja el cierre de sesión
@@ -145,6 +150,28 @@ export const NavBar = () => {
 
           {/* Nav: Componente de Bootstrap para elementos de navegación a la derecha */}
           <Nav>
+            {/* Link al carrito (visible para todos) */}
+            <Nav.Link
+              href="#"
+              active={location.pathname === '/cart'}
+              className="text-white position-relative me-3"
+              onClick={() => navigate('/cart')}
+            >
+              <i className="fa-solid fa-shopping-cart me-1"></i>
+              Carrito
+              {/* Badge: Contador de artículos en el carrito */}
+              {getTotalItems() > 0 && (
+                <Badge
+                  bg="danger"
+                  pill
+                  className="position-absolute top-0 start-100 translate-middle"
+                  style={{ fontSize: '0.7rem' }}
+                >
+                  {getTotalItems()}
+                </Badge>
+              )}
+            </Nav.Link>
+
             {/* Condicional: Si el usuario NO está autenticado, muestra botones de login y registro */}
             {!authData.isAuthenticated ? (
               <>

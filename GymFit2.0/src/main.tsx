@@ -11,6 +11,8 @@ import { GymApp } from './GymApp';
 // Importación del componente principal de la aplicación
 import { AuthProvider } from './contexts/AuthContext';
 // Importación del proveedor de contexto de autenticación
+import { CartProvider } from './contexts/CartContext';
+// Importación del proveedor de contexto del carrito
 import { AppRoutes } from './routes/AppRoutes';
 // Importación del componente de rutas
 
@@ -31,10 +33,13 @@ root.render(
       {/* AuthProvider: Provee el contexto de autenticación a toda la aplicación */}
       {/* Provider: Componente que comparte el contexto con sus hijos */}
       <AuthProvider>
-        {/* GymApp: Componente principal de la aplicación (incluye NavBar) */}
-        <GymApp />
-        {/* AppRoutes: Componente que define y renderiza las rutas de la aplicación */}
-        <AppRoutes />
+        {/* CartProvider: Provee el contexto del carrito a toda la aplicación */}
+        <CartProvider>
+          {/* GymApp: Componente principal de la aplicación (incluye NavBar) */}
+          <GymApp />
+          {/* AppRoutes: Componente que define y renderiza las rutas de la aplicación */}
+          <AppRoutes />
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>

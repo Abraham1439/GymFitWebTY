@@ -107,3 +107,10 @@ export interface LoginData {
   password: string;              // Contraseña para login
 }
 
+// Interfaz que define la estructura de un artículo en el carrito
+// Interface: Define la forma de los objetos de carrito
+export interface CartItem {
+  product: Product;              // Producto completo
+  quantity: number;              // Cantidad del producto en el carrito
+}
+

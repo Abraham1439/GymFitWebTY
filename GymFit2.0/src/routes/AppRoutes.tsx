@@ -6,6 +6,7 @@ import { useRoutes } from 'react-router-dom';
 import { HomePage } from '../pages/home/HomePage';
 import { LoginPage, RegisterPage } from '../pages/auth';
 import { StorePage } from '../pages/store';
+import { CartPage } from '../pages/cart';
 import { TrainersPage } from '../pages/trainers';
 import { UserPanel } from '../pages/user';
 import { TrainerPanel } from '../pages/trainer';
@@ -36,6 +37,11 @@ export const AppRoutes = () => {
     {
       path: '/store',             // path: Ruta para tienda
       element: <StorePage />      // element: Componente de página de tienda
+    },
+    // Ruta para la página del carrito
+    {
+      path: '/cart',              // path: Ruta para carrito
+      element: <CartPage />       // element: Componente de página de carrito
     },
     // Ruta para la página de entrenadores
     {

@@ -6,6 +6,7 @@ import { Container, Row, Col, Card, Button, Badge, Alert, Form } from 'react-boo
 
 // Importación de hooks y helpers
 import { useAuth } from '../../contexts/AuthContext';
+import { useCart } from '../../contexts/CartContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
 // Importación de tipos e interfaces
 import type { Product, Purchase } from '../../interfaces/gym.interfaces';
@@ -20,6 +21,9 @@ const STORAGE_KEY_PURCHASES = 'gymPurchases';  // Clave para almacenar compras
 export const StorePage = () => {
   // useAuth: Hook personalizado que retorna los datos de autenticación
   const { authData } = useAuth();
+
+  // useCart: Hook personalizado que retorna las funciones del carrito
+  const { addToCart } = useCart();
 
   // useState: Hook de React para gestionar estado local
   // Estado para almacenar los productos disponibles
@@ -347,12 +351,35 @@ export const StorePage = () => {
                       {/* disabled: Desactiva si no hay stock o no es usuario */}
                       <Button
                         variant="primary"
-                        className="w-100"
+                        className="w-100 mb-2"
                         onClick={() => handlePurchase(product)}
                         disabled={product.stock <= 0 || !authData.isAuthenticated || authData.user?.role !== UserRole.USER}
                       >
                         {/* Condicional: Si no hay stock muestra "Agotado", sino "Comprar" */}
                         {product.stock <= 0 ? 'Agotado' : 'Comprar'}
+                      </Button>
+
+                      {/* Button: Botón para agregar al carrito */}
+                      {/* variant: Estilo del botón (outline-primary = borde azul) */}
+                      {/* onClick: Ejecuta la función de agregar al carrito */}
+                      {/* disabled: Desactiva si no hay stock */}
+                      <Button
+                        variant="outline-primary"
+                        className="w-100"
+                        onClick={() => {
+                          if (product.stock <= 0) {
+                            setMessage({ type: 'danger', text: 'Producto agotado' });
+                            setTimeout(() => setMessage(null), 3000);
+                            return;
+                          }
+                          addToCart(product, 1);
+                          setMessage({ type: 'success', text: `${product.name} agregado al carrito` });
+                          setTimeout(() => setMessage(null), 3000);
+                        }}
+                        disabled={product.stock <= 0}
+                      >
+                        <i className="fa-solid fa-cart-plus me-2"></i>
+                        Agregar al carrito
                       </Button>
                     </div>
                   </Card.Body>
