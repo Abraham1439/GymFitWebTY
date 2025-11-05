@@ -5,8 +5,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Importación de componentes de Bootstrap
 import { Container, Row, Col, Card, Button, Badge, Alert, Form, InputGroup } from 'react-bootstrap';
-// Importación de componentes compartidos
-import { Breadcrumbs } from '../sharedComponents/Breadcrumbs';
 
 // Importación de hooks y helpers
 import { useCart } from '../../contexts/CartContext';
@@ -293,8 +291,6 @@ export const StorePage = () => {
 
       {/* Container: Contenedor principal del contenido */}
       <Container className="pt-1 pb-4">
-        {/* Breadcrumbs: Navegacion mejorada */}
-        <Breadcrumbs />
         {/* Row: Componente de Bootstrap para crear filas */}
         <Row>
           {/* Col: Componente de Bootstrap para crear columnas */}

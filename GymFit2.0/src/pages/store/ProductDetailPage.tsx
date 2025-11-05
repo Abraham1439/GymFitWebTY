@@ -14,7 +14,6 @@ import {
   Badge,
   Alert,
 } from 'react-bootstrap';
-import { Breadcrumbs } from '../sharedComponents/Breadcrumbs';
 
 // Importación de hooks y helpers
 import { useCart } from '../../contexts/CartContext';
@@ -60,22 +59,25 @@ export const ProductDetailPage = () => {
   const loadProduct = (productId: string): void => {
     setLoading(true);
     
-    // Obtiene todos los productos desde localStorage
-    const products = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
-    
-    // Busca el producto por ID
-    const foundProduct = products.find((p) => p.id === productId);
-    
-    if (foundProduct) {
-      setProduct(foundProduct);
-    } else {
-      setMessage({
-        type: 'danger',
-        text: 'Producto no encontrado',
-      });
-    }
-    
-    setLoading(false);
+    // Simula un pequeño delay para mostrar la pantalla de carga
+    setTimeout(() => {
+      // Obtiene todos los productos desde localStorage
+      const products = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
+      
+      // Busca el producto por ID
+      const foundProduct = products.find((p) => p.id === productId);
+      
+      if (foundProduct) {
+        setProduct(foundProduct);
+      } else {
+        setMessage({
+          type: 'danger',
+          text: 'Producto no encontrado',
+        });
+      }
+      
+      setLoading(false);
+    }, 800); // 800ms de delay para mostrar la pantalla de carga
   };
 
   /**
@@ -136,17 +138,49 @@ export const ProductDetailPage = () => {
     }, 500);
   };
 
-  // Si está cargando, muestra un mensaje
+  // Si está cargando, muestra pantalla de carga estilizada
   if (loading) {
     return (
-      <Container className="py-5">
+      <div
+        style={{
+          minHeight: '100vh',
+          backgroundColor: '#f5f5f5',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
+          {/* Spinner circular */}
+          <div
+            className="spinner-border"
+            role="status"
+            style={{
+              width: '4rem',
+              height: '4rem',
+              borderWidth: '0.4rem',
+              borderColor: '#0a58ca',
+              borderRightColor: 'transparent',
+              marginBottom: '1.5rem',
+            }}
+          >
             <span className="visually-hidden">Cargando...</span>
           </div>
-          <p className="mt-3">Cargando producto...</p>
+          
+          {/* Texto principal con ícono */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <i className="fa-solid fa-box" style={{ color: '#0a58ca', fontSize: '1.2rem' }}></i>
+            <h4 style={{ color: '#0a58ca', fontWeight: 'bold', margin: 0 }}>
+              Cargando producto...
+            </h4>
+          </div>
+          
+          {/* Texto secundario */}
+          <p style={{ color: '#0a58ca', fontSize: '0.9rem', margin: 0 }}>
+            Preparando los detalles
+          </p>
         </div>
-      </Container>
+      </div>
     );
   }
 
@@ -165,14 +199,9 @@ export const ProductDetailPage = () => {
     );
   }
 
-  // JSX: Sintaxis de JavaScript que permite escribir HTML en JavaScript
+
   return (
     <Container fluid className="p-0" style={{ marginTop: 0, paddingTop: 0 }}>
-      {/* Breadcrumbs: Navegacion mejorada */}
-      <Container className="pt-3">
-        <Breadcrumbs />
-      </Container>
-
       {/* Container: Contenedor principal del contenido */}
       <Container className="py-4">
         <Row>
