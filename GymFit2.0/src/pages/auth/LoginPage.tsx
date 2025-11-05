@@ -4,7 +4,7 @@ import { useState } from 'react';
 // useNavigate: Hook de react-router-dom para navegación programática
 import { useNavigate } from 'react-router-dom';
 // Importación de componentes de Bootstrap
-import { Container, Card, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Card, Form, Button, Alert, InputGroup } from 'react-bootstrap';
 
 // Importación del hook de autenticación
 import { useAuth } from '../../contexts/AuthContext';
@@ -34,6 +34,9 @@ export const LoginPage = () => {
 
   // Estado para indicar si se está procesando el login
   const [loading, setLoading] = useState<boolean>(false); // false = no está cargando
+
+  // Estado para controlar si la contraseña está visible o no
+  const [showPassword, setShowPassword] = useState<boolean>(false); // false = oculta la contraseña
 
   /**
    * Maneja el cambio en los campos del formulario
@@ -148,14 +151,26 @@ export const LoginPage = () => {
 
             <Form.Group className="mb-3">
               <Form.Label>Contraseña</Form.Label>
-              <Form.Control
-                type="password"                 // type: Tipo de input HTML5 (oculta el texto)
-                name="password"                  // name: Nombre del campo
-                placeholder="Tu contraseña"      // placeholder: Texto de ejemplo
-                value={formData.password}         // value: Valor controlado del input
-                onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
-                required                         // required: Atributo HTML5 para validación
-              />
+              {/* InputGroup: Componente de Bootstrap para agrupar input con botón */}
+              <InputGroup>
+                <Form.Control
+                  type={showPassword ? 'text' : 'password'} // type: Alterna entre 'text' y 'password'
+                  name="password"                  // name: Nombre del campo
+                  placeholder="Tu contraseña"      // placeholder: Texto de ejemplo
+                  value={formData.password}         // value: Valor controlado del input
+                  onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                  required                         // required: Atributo HTML5 para validación
+                />
+                {/* Button: Botón para mostrar/ocultar contraseña */}
+                <Button
+                  variant="outline-secondary"
+                  onClick={() => setShowPassword(!showPassword)} // onClick: Alterna el estado
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {/* Ícono de Font Awesome: cambia según el estado */}
+                  <i className={showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'}></i>
+                </Button>
+              </InputGroup>
             </Form.Group>
 
             {/* Button: Componente de Bootstrap para botones */}
