@@ -1,5 +1,5 @@
-// URLs de imágenes para productos del proyecto GymWeb 2.0
-// Este archivo centraliza todas las URLs de imágenes de productos utilizadas en la aplicación
+// URLs de imágenes para productos del proyecto GymFitWeb
+// Este archivo centraliza todas las URLs de imágenes de productos y entrenadores utilizadas en la aplicación
 
 /**
  * URLs de imágenes para productos
@@ -15,5 +15,13 @@ export const PRODUCT_IMAGES = {
   CREATINA: 'https://allnutrition.cl/cdn/shop/files/s00040044-4c456f6d-6dc8-4ee9-8b61-ceda8febbd09.png?v=1751866402&width=550',
   BCAA: 'https://vcsuplementos.cl/cdn/shop/files/BCAA-811-ZERO-C-IMG-OPT_5000x_7e4fb66b-1845-486a-855d-c4831de7a7f6.webp?v=1710022112',
   
+} as const;
+
+/**
+ * URLs de imágenes para entrenadores
+ */
+export const TRAINER_IMAGES = {
+  DEFAULT: 'https://cdn.shopify.com/s/files/1/0032/5736/8611/files/HanyRambod_1080_480x480.jpg?v=1566268070',
+  HANY_RAMBOD: 'https://cdn.shopify.com/s/files/1/0032/5736/8611/files/HanyRambod_1080_480x480.jpg?v=1566268070',
 } as const;
 

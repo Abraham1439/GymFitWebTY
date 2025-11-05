@@ -1,14 +1,18 @@
 // Página donde los usuarios pueden ver y contratar entrenadores
 // Functional Component: Componente de React definido como función
 import { useState, useEffect } from 'react';
+// useNavigate: Hook de react-router-dom para navegación programática
+import { useNavigate } from 'react-router-dom';
 // Importación de componentes de Bootstrap
-import { Container, Row, Col, Card, Button, Badge, Alert, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, Alert, Modal } from 'react-bootstrap';
 
 // Importación de hooks y helpers
 import { useAuth } from '../../contexts/AuthContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
+// Importación de URLs de imágenes
+import { TRAINER_IMAGES } from '../../mockData';
 // Importación de tipos e interfaces
-import type { Trainer, TrainerHire, Message } from '../../interfaces/gym.interfaces';
+import type { Trainer, TrainerHire } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
 
 // Constantes para las claves de localStorage
@@ -18,6 +22,9 @@ const STORAGE_KEY_HIRES = 'gymHires';          // Clave para almacenar contratac
 // Componente de página de entrenadores
 // Functional Component: Componente funcional de React
 export const TrainersPage = () => {
+  // useNavigate: Hook que retorna una función para navegar programáticamente
+  const navigate = useNavigate();
+  
   // useAuth: Hook personalizado que retorna los datos de autenticación
   const { authData } = useAuth();
 
@@ -63,7 +70,7 @@ export const TrainersPage = () => {
           price: 50,                            // Precio por hora
           description: 'Especialista en entrenamiento de fuerza y levantamiento de pesas', // Descripción
           rating: 4.8,                         // Calificación (0-5)
-          image: 'https://via.placeholder.com/300x300?text=Carlos', // URL de imagen placeholder
+          image: TRAINER_IMAGES.DEFAULT,       // URL de imagen desde mockData
           available: true                       // Disponible
         },
         // Entrenador 2
@@ -76,7 +83,7 @@ export const TrainersPage = () => {
           price: 40,
           description: 'Experta en rutinas de cardio y programas de pérdida de peso',
           rating: 4.6,
-          image: 'https://via.placeholder.com/300x300?text=Maria',
+          image: TRAINER_IMAGES.DEFAULT,        // URL de imagen desde mockData
           available: true
         },
         // Entrenador 3
@@ -89,7 +96,7 @@ export const TrainersPage = () => {
           price: 60,
           description: 'Especialista en entrenamiento con peso corporal y movilidad',
           rating: 4.9,
-          image: 'https://via.placeholder.com/300x300?text=Juan',
+          image: TRAINER_IMAGES.DEFAULT,       // URL de imagen desde mockData
           available: true
         },
         // Entrenador 4
@@ -102,7 +109,30 @@ export const TrainersPage = () => {
           price: 45,
           description: 'Instructora certificada de yoga y estiramientos',
           rating: 4.7,
-          image: 'https://via.placeholder.com/300x300?text=Ana',
+          image: TRAINER_IMAGES.DEFAULT,       // URL de imagen desde mockData
+          available: true
+        },
+        // Entrenador 5: Hany Rambod
+        {
+          id: generateId(),
+          userId: generateId(),
+          name: 'Hany Rambod',
+          specialization: 'Culturismo de Élite',
+          experience: 25,
+          price: 150,
+          description: `Hany Rambod, apodado "The Pro Creator", es un entrenador de culturismo de élite y el fundador de Evogen Nutrition.
+
+Es más conocido por:
+
+• Entrenar a múltiples campeones de Mr. Olympia, sumando más de 25 títulos en total.
+
+• Ser el creador del revolucionario sistema de entrenamiento FST-7 (Fascia Stretch Training-7).
+
+• Haber entrenado a leyendas del deporte como Phil Heath, Jay Cutler, Chris Bumstead, Hadi Choopan y Derek Lunsford.
+
+Su enfoque combina una sólida base científica (licenciatura en Biología) con décadas de experiencia práctica para maximizar el potencial genético de sus atletas.`,
+          rating: 5.0,
+          image: TRAINER_IMAGES.HANY_RAMBOD,   // URL de imagen específica de Hany Rambod
           available: true
         }
       ];
@@ -112,8 +142,25 @@ export const TrainersPage = () => {
       // Actualiza el estado con los entrenadores iniciales
       setTrainers(initialTrainers);
     } else {
-      // Si ya hay entrenadores, los carga desde localStorage
-      setTrainers(savedTrainers);
+      // Si ya hay entrenadores, actualiza las imágenes si tienen URLs de placeholder
+      const updatedTrainers = savedTrainers.map((trainer) => {
+        // Si la imagen es un placeholder, actualízala
+        const isPlaceholder = trainer.image.includes('placeholder.com') || 
+                             trainer.image.includes('via.placeholder');
+        
+        if (isPlaceholder) {
+          return {
+            ...trainer,
+            image: TRAINER_IMAGES.DEFAULT
+          };
+        }
+        return trainer;
+      });
+      
+      // Guarda los entrenadores actualizados en localStorage
+      saveToLocalStorage(STORAGE_KEY_TRAINERS, updatedTrainers);
+      // Actualiza el estado con los entrenadores actualizados
+      setTrainers(updatedTrainers);
     }
   };
 
@@ -272,17 +319,18 @@ export const TrainersPage = () => {
                 <Col key={trainer.id} xs={12} md={6} lg={4} className="mb-4">
                   {/* Card: Componente de Bootstrap para crear tarjetas */}
                   <Card className="h-100">
-                    {/* Imagen del entrenador */}
-                    {/* variant: Posición de la imagen (top = arriba) */}
-                    {/* src: URL de la imagen */}
-                    {/* alt: Texto alternativo para accesibilidad */}
-                    {/* style: Estilos inline */}
-                    <Card.Img
-                      variant="top"
-                      src={trainer.image}
-                      alt={trainer.name}
-                      style={{ height: '250px', objectFit: 'cover' }}
-                    />
+                    {/* Imagen del entrenador clickeable */}
+                    <div
+                      onClick={() => navigate(`/trainer/${trainer.id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <Card.Img
+                        variant="top"
+                        src={trainer.image}
+                        alt={trainer.name}
+                        style={{ height: '250px', objectFit: 'cover' }}
+                      />
+                    </div>
                     
                     {/* Card.Body: Cuerpo de la tarjeta */}
                     <Card.Body className="d-flex flex-column">
@@ -295,8 +343,19 @@ export const TrainersPage = () => {
                         {trainer.available ? 'Disponible' : 'No Disponible'}
                       </Badge>
 
-                      {/* Card.Title: Título de la tarjeta (nombre del entrenador) */}
-                      <Card.Title>{trainer.name}</Card.Title>
+                      {/* Card.Title: Título de la tarjeta (nombre del entrenador) clickeable */}
+                      <Card.Title
+                        onClick={() => navigate(`/trainer/${trainer.id}`)}
+                        style={{
+                          cursor: 'pointer',
+                          color: '#0d6efd',
+                          transition: 'color 0.2s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = '#0a58ca')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = '#0d6efd')}
+                      >
+                        {trainer.name}
+                      </Card.Title>
 
                       {/* Card.Text: Texto de la tarjeta (especialización) */}
                       <Card.Text className="text-muted">
@@ -313,8 +372,11 @@ export const TrainersPage = () => {
                         <strong>Calificación:</strong> ⭐ {trainer.rating.toFixed(1)} {/* toFixed: Formatea a 1 decimal */}
                       </Card.Text>
 
-                      {/* Card.Text: Descripción */}
-                      <Card.Text>{trainer.description}</Card.Text>
+                      {/* Card.Text: Descripción (solo primera parte) */}
+                      <Card.Text className="text-muted">
+                        {trainer.description.split('\n')[0].substring(0, 100)}
+                        {trainer.description.split('\n')[0].length > 100 ? '...' : ''}
+                      </Card.Text>
 
                       {/* Información del precio y botón */}
                       <div className="mt-auto">

@@ -3,4 +3,6 @@
 
 // Exporta el componente de página de entrenadores
 export { TrainersPage } from './TrainersPage';
+// Exporta el componente de página de detalles de entrenador
+export { TrainerDetailPage } from './TrainerDetailPage';
 

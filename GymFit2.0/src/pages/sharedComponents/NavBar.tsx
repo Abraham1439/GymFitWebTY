@@ -54,7 +54,7 @@ export const NavBar = () => {
           {/* Icono de Font Awesome */}
           <i className="fa-solid fa-dumbbell me-2"></i>
           {/* Nombre de la aplicación */}
-          GymWeb 2.0
+          GymFitWeb
         </Navbar.Brand>
         
         {/* Navbar.Toggle: Botón para colapsar/expandir el menú en móviles */}

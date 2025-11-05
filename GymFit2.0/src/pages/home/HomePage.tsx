@@ -63,7 +63,7 @@ export const HomePage = () => {
             className="text-white display-4 mb-2"
             style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)', marginTop: '0px' }}
           >
-            Bienvenido a GymWeb 2.0
+            Bienvenido a GymFitWeb
           </h1>
           <p
             className="text-white lead"

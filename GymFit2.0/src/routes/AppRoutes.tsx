@@ -7,7 +7,7 @@ import { HomePage } from '../pages/home/HomePage';
 import { LoginPage, RegisterPage } from '../pages/auth';
 import { StorePage, ProductDetailPage } from '../pages/store';
 import { CartPage } from '../pages/cart';
-import { TrainersPage } from '../pages/trainers';
+import { TrainersPage, TrainerDetailPage } from '../pages/trainers';
 import { UserPanel } from '../pages/user';
 import { TrainerPanel } from '../pages/trainer';
 import { AdminPanel } from '../pages/admin';
@@ -52,6 +52,11 @@ export const AppRoutes = () => {
     {
       path: '/trainers',          // path: Ruta para entrenadores
       element: <TrainersPage />   // element: Componente de página de entrenadores
+    },
+    // Ruta para la página de detalles de entrenador
+    {
+      path: '/trainer/:id',       // path: Ruta dinámica para detalles de entrenador
+      element: <TrainerDetailPage /> // element: Componente de página de detalles
     },
     // Ruta para el panel de usuario
     {

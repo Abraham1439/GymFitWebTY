@@ -1,4 +1,4 @@
-// Componente principal de la aplicación GymWeb 2.0
+// Componente principal de la aplicación GymFitWeb
 // Functional Component: Componente de React definido como función
 import { NavBar } from './pages/sharedComponents/NavBar';
 // Importación del componente de barra de navegación
