@@ -4,3 +4,5 @@
 // Exporta el componente de página de tienda
 export { StorePage } from './StorePage';
 
+// Exporta el componente de página de detalles de producto
+export { ProductDetailPage } from './ProductDetailPage';

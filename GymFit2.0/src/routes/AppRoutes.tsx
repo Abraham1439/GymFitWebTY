@@ -5,7 +5,7 @@ import { useRoutes } from 'react-router-dom';
 // Importación de componentes de páginas
 import { HomePage } from '../pages/home/HomePage';
 import { LoginPage, RegisterPage } from '../pages/auth';
-import { StorePage } from '../pages/store';
+import { StorePage, ProductDetailPage } from '../pages/store';
 import { CartPage } from '../pages/cart';
 import { TrainersPage } from '../pages/trainers';
 import { UserPanel } from '../pages/user';
@@ -37,6 +37,11 @@ export const AppRoutes = () => {
     {
       path: '/store',             // path: Ruta para tienda
       element: <StorePage />      // element: Componente de página de tienda
+    },
+    // Ruta para la página de detalles de producto
+    {
+      path: '/product/:id',       // path: Ruta dinámica para detalles de producto
+      element: <ProductDetailPage /> // element: Componente de página de detalles
     },
     // Ruta para la página del carrito
     {

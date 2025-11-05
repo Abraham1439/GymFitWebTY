@@ -303,12 +303,18 @@ export const StorePage = () => {
                   {/* src: URL de la imagen */}
                   {/* alt: Texto alternativo para accesibilidad */}
                   {/* style: Estilos inline */}
-                  <Card.Img
-                    variant="top"
-                    src={product.image}
-                    alt={product.name}
-                    style={{ height: '200px', objectFit: 'cover' }}
-                  />
+                  {/* Card.Img: Imagen clickeable para ver detalles */}
+                  <div
+                    onClick={() => navigate(`/product/${product.id}`)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <Card.Img
+                      variant="top"
+                      src={product.image}
+                      alt={product.name}
+                      style={{ height: '200px', objectFit: 'cover' }}
+                    />
+                  </div>
                   
                   {/* Card.Body: Cuerpo de la tarjeta */}
                   <Card.Body className="d-flex flex-column">
@@ -322,8 +328,19 @@ export const StorePage = () => {
                       {product.category === 'accessory' ? 'Accesorio' : 'Suplemento'}
                     </Badge>
 
-                    {/* Card.Title: Título de la tarjeta */}
-                    <Card.Title>{product.name}</Card.Title>
+                    {/* Card.Title: Título clickeable para ver detalles */}
+                    <Card.Title
+                      onClick={() => navigate(`/product/${product.id}`)}
+                      style={{
+                        cursor: 'pointer',
+                        color: '#0d6efd',
+                        transition: 'color 0.2s',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#0a58ca')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0d6efd')}
+                    >
+                      {product.name}
+                    </Card.Title>
 
                     {/* Card.Text: Texto de la tarjeta */}
                     <Card.Text>{product.description}</Card.Text>

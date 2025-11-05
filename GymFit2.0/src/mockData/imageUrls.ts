@@ -15,7 +15,5 @@ export const PRODUCT_IMAGES = {
   CREATINA: 'https://allnutrition.cl/cdn/shop/files/s00040044-4c456f6d-6dc8-4ee9-8b61-ceda8febbd09.png?v=1751866402&width=550',
   BCAA: 'https://vcsuplementos.cl/cdn/shop/files/BCAA-811-ZERO-C-IMG-OPT_5000x_7e4fb66b-1845-486a-855d-c4831de7a7f6.webp?v=1710022112',
   
-  // Imagen por defecto para productos
-  DEFAULT: 'https://via.placeholder.com/300x200?text=Producto',
 } as const;
 
