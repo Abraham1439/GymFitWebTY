@@ -1,28 +1,27 @@
 // Página de tienda donde los usuarios pueden ver y comprar productos
 // Functional Component: Componente de React definido como función
 import { useState, useEffect } from 'react';
+// useNavigate: Hook de react-router-dom para navegación programática
+import { useNavigate } from 'react-router-dom';
 // Importación de componentes de Bootstrap
 import { Container, Row, Col, Card, Button, Badge, Alert, Form } from 'react-bootstrap';
 
 // Importación de hooks y helpers
-import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
 // Importación de URLs de imágenes
 import { PRODUCT_IMAGES } from '../../mockData';
 // Importación de tipos e interfaces
-import type { Product, Purchase } from '../../interfaces/gym.interfaces';
-import { UserRole } from '../../interfaces/gym.interfaces';
+import type { Product } from '../../interfaces/gym.interfaces';
 
 // Constantes para las claves de localStorage
 const STORAGE_KEY_PRODUCTS = 'gymProducts';    // Clave para almacenar productos
-const STORAGE_KEY_PURCHASES = 'gymPurchases';  // Clave para almacenar compras
 
 // Componente de página de tienda
 // Functional Component: Componente funcional de React
 export const StorePage = () => {
-  // useAuth: Hook personalizado que retorna los datos de autenticación
-  const { authData } = useAuth();
+  // useNavigate: Hook que retorna una función para navegar programáticamente
+  const navigate = useNavigate();
 
   // useCart: Hook personalizado que retorna las funciones del carrito
   const { addToCart } = useCart();
@@ -182,25 +181,10 @@ export const StorePage = () => {
   };
 
   /**
-   * Maneja la compra de un producto
-   * @param product - Producto a comprar
+   * Maneja el botón "Comprar" - agrega el producto al carrito y redirige al carrito
+   * @param product - Producto a agregar al carrito
    */
   const handlePurchase = (product: Product): void => {
-    // Verifica que el usuario esté autenticado
-    if (!authData.isAuthenticated || !authData.user) {
-      setMessage({ type: 'danger', text: 'Debes iniciar sesión para comprar productos' });
-      // setTimeout: Función que ejecuta código después de un tiempo
-      setTimeout(() => setMessage(null), 3000); // Limpia el mensaje después de 3 segundos
-      return;                     // Sale de la función si no está autenticado
-    }
-
-    // Verifica que el usuario tenga rol USER (no admin ni trainer)
-    if (authData.user.role !== UserRole.USER) {
-      setMessage({ type: 'danger', text: 'Solo los usuarios pueden comprar productos' });
-      setTimeout(() => setMessage(null), 3000);
-      return;
-    }
-
     // Verifica que haya stock disponible
     if (product.stock <= 0) {
       setMessage({ type: 'danger', text: 'Producto agotado' });
@@ -208,53 +192,16 @@ export const StorePage = () => {
       return;
     }
 
-    try {
-      // Obtiene las compras existentes
-      const purchases = getFromLocalStorage<Purchase[]>(STORAGE_KEY_PURCHASES) || [];
-
-      // Crea una nueva compra
-      const newPurchase: Purchase = {
-        id: generateId(),                    // Genera un ID único
-        userId: authData.user.id,            // ID del usuario que compra
-        productId: product.id,               // ID del producto comprado
-        quantity: 1,                         // Cantidad: 1 producto
-        total: product.price,                // Total: precio del producto
-        date: new Date().toISOString(),      // Fecha de compra
-        status: 'completed'                  // Estado: completada (simulación)
-      };
-
-      // Agrega la nueva compra al array
-      purchases.push(newPurchase);
-
-      // Guarda las compras actualizadas en localStorage
-      saveToLocalStorage(STORAGE_KEY_PURCHASES, purchases);
-
-      // Actualiza el stock del producto
-      const updatedProducts = products.map((p) => {
-        // map: Método de array que crea un nuevo array transformando cada elemento
-        if (p.id === product.id) {
-          // Si es el producto comprado, reduce el stock
-          return { ...p, stock: p.stock - 1 }; // Spread operator: copia el objeto y actualiza stock
-        }
-        return p;                              // Retorna el producto sin cambios
-      });
-
-      // Actualiza el estado de productos con el stock actualizado
-      setProducts(updatedProducts);
-
-      // Guarda los productos actualizados en localStorage
-      saveToLocalStorage(STORAGE_KEY_PRODUCTS, updatedProducts);
-
-      // Muestra mensaje de éxito
-      setMessage({ type: 'success', text: `¡Compra realizada! Has comprado ${product.name}` });
-      setTimeout(() => setMessage(null), 3000);
-
-    } catch (error) {
-      // Manejo de errores
-      console.error('Error al realizar compra:', error);
-      setMessage({ type: 'danger', text: 'Error al realizar la compra' });
-      setTimeout(() => setMessage(null), 3000);
-    }
+    // Agrega el producto al carrito
+    addToCart(product, 1);
+    
+    // Muestra mensaje de éxito
+    setMessage({ type: 'success', text: `${product.name} agregado al carrito` });
+    
+    // Redirige a la página del carrito después de un breve delay
+    setTimeout(() => {
+      navigate('/cart');
+    }, 500); // 500ms de delay para que el usuario vea el mensaje
   };
 
   /**
@@ -393,16 +340,16 @@ export const StorePage = () => {
                         Stock: {product.stock} {/* Muestra la cantidad disponible */}
                       </p>
 
-                      {/* Button: Botón para comprar */}
+                      {/* Button: Botón para comprar - agrega al carrito y redirige */}
                       {/* variant: Estilo del botón */}
                       {/* className: Clase CSS (w-100 = width 100%) */}
-                      {/* onClick: Ejecuta la función de compra */}
-                      {/* disabled: Desactiva si no hay stock o no es usuario */}
+                      {/* onClick: Ejecuta la función que agrega al carrito y redirige */}
+                      {/* disabled: Desactiva si no hay stock */}
                       <Button
                         variant="primary"
                         className="w-100 mb-2"
                         onClick={() => handlePurchase(product)}
-                        disabled={product.stock <= 0 || !authData.isAuthenticated || authData.user?.role !== UserRole.USER}
+                        disabled={product.stock <= 0}
                       >
                         {/* Condicional: Si no hay stock muestra "Agotado", sino "Comprar" */}
                         {product.stock <= 0 ? 'Agotado' : 'Comprar'}
