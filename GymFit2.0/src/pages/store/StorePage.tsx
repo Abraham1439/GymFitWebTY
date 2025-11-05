@@ -8,6 +8,8 @@ import { Container, Row, Col, Card, Button, Badge, Alert, Form } from 'react-boo
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
+// Importación de URLs de imágenes
+import { PRODUCT_IMAGES } from '../../mockData';
 // Importación de tipos e interfaces
 import type { Product, Purchase } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
@@ -43,6 +45,36 @@ export const StorePage = () => {
   }, []); // Array de dependencias vacío: se ejecuta solo al montar
 
   /**
+   * Función helper para obtener la imagen correcta basada en el nombre del producto
+   * @param productName - Nombre del producto
+   * @returns URL de la imagen correspondiente
+   */
+  const getProductImageUrl = (productName: string): string => {
+    const name = productName.toLowerCase();
+    
+    if (name.includes('cinturón') || name.includes('cinturon')) {
+      return PRODUCT_IMAGES.CINTURON;
+    }
+    if (name.includes('guantes')) {
+      return PRODUCT_IMAGES.GUANTES;
+    }
+    if (name.includes('bandas')) {
+      return PRODUCT_IMAGES.BANDAS;
+    }
+    if (name.includes('proteína') || name.includes('proteina') || name.includes('whey')) {
+      return PRODUCT_IMAGES.PROTEINA;
+    }
+    if (name.includes('creatina')) {
+      return PRODUCT_IMAGES.CREATINA;
+    }
+    if (name.includes('bcaa')) {
+      return PRODUCT_IMAGES.BCAA;
+    }
+    
+    return PRODUCT_IMAGES.DEFAULT;
+  };
+
+  /**
    * Carga los productos desde localStorage
    * void: Tipo que indica que la función no retorna valor
    */
@@ -61,7 +93,7 @@ export const StorePage = () => {
           description: 'Cinturón de cuero resistente para levantamiento de pesas', // Descripción
           price: 29.99,                        // Precio en dólares
           category: 'accessory',               // Categoría: accesorio
-          image: 'https://via.placeholder.com/300x200?text=Cinturon', // URL de imagen placeholder
+          image: PRODUCT_IMAGES.CINTURON,      // URL de imagen desde mockData
           stock: 15,                          // Stock disponible
           createdAt: new Date().toISOString()  // Fecha de creación
         },
@@ -72,7 +104,7 @@ export const StorePage = () => {
           description: 'Guantes acolchados para protección de manos',
           price: 19.99,
           category: 'accessory',
-          image: 'https://via.placeholder.com/300x200?text=Guantes',
+          image: PRODUCT_IMAGES.GUANTES,       // URL de imagen desde mockData
           stock: 25,
           createdAt: new Date().toISOString()
         },
@@ -83,7 +115,7 @@ export const StorePage = () => {
           description: 'Proteína de suero de leche para recuperación muscular',
           price: 49.99,
           category: 'supplement',
-          image: 'https://via.placeholder.com/300x200?text=Proteina',
+          image: PRODUCT_IMAGES.PROTEINA,      // URL de imagen desde mockData
           stock: 10,
           createdAt: new Date().toISOString()
         },
@@ -94,7 +126,7 @@ export const StorePage = () => {
           description: 'Creatina pura para aumentar fuerza y masa muscular',
           price: 24.99,
           category: 'supplement',
-          image: 'https://via.placeholder.com/300x200?text=Creatina',
+          image: PRODUCT_IMAGES.CREATINA,      // URL de imagen desde mockData
           stock: 18,
           createdAt: new Date().toISOString()
         },
@@ -105,7 +137,7 @@ export const StorePage = () => {
           description: 'Set de bandas elásticas de diferentes resistencias',
           price: 15.99,
           category: 'accessory',
-          image: 'https://via.placeholder.com/300x200?text=Bandas',
+          image: PRODUCT_IMAGES.BANDAS,        // URL de imagen desde mockData
           stock: 30,
           createdAt: new Date().toISOString()
         },
@@ -116,7 +148,7 @@ export const StorePage = () => {
           description: 'Aminoácidos de cadena ramificada para recuperación',
           price: 34.99,
           category: 'supplement',
-          image: 'https://via.placeholder.com/300x200?text=BCAA',
+          image: PRODUCT_IMAGES.BCAA,          // URL de imagen desde mockData
           stock: 12,
           createdAt: new Date().toISOString()
         }
@@ -127,8 +159,25 @@ export const StorePage = () => {
       // Actualiza el estado con los productos iniciales
       setProducts(initialProducts);
     } else {
-      // Si ya hay productos, los carga desde localStorage
-      setProducts(savedProducts);
+      // Si ya hay productos, actualiza las imágenes si tienen URLs de placeholder
+      const updatedProducts = savedProducts.map((product) => {
+        // Si la imagen es un placeholder o no coincide con las nuevas URLs, actualízala
+        const isPlaceholder = product.image.includes('placeholder.com') || 
+                             product.image.includes('via.placeholder');
+        
+        if (isPlaceholder) {
+          return {
+            ...product,
+            image: getProductImageUrl(product.name)
+          };
+        }
+        return product;
+      });
+      
+      // Guarda los productos actualizados en localStorage
+      saveToLocalStorage(STORAGE_KEY_PRODUCTS, updatedProducts);
+      // Actualiza el estado con los productos actualizados
+      setProducts(updatedProducts);
     }
   };
 
