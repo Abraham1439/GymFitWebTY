@@ -18,6 +18,8 @@ import {
 // Importación de hooks y helpers
 import { useCart } from '../../contexts/CartContext';
 import { getFromLocalStorage } from '../../helpers';
+// Importación de constantes de colores
+import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Product } from '../../interfaces/gym.interfaces';
 
@@ -144,7 +146,7 @@ export const ProductDetailPage = () => {
       <div
         style={{
           minHeight: '100vh',
-          backgroundColor: '#f5f5f5',
+          backgroundColor: COLORS.COLOR_5,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -159,7 +161,7 @@ export const ProductDetailPage = () => {
               width: '4rem',
               height: '4rem',
               borderWidth: '0.4rem',
-              borderColor: '#0a58ca',
+              borderColor: COLORS.COLOR_2,
               borderRightColor: 'transparent',
               marginBottom: '1.5rem',
             }}
@@ -169,14 +171,14 @@ export const ProductDetailPage = () => {
           
           {/* Texto principal con ícono */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <i className="fa-solid fa-box" style={{ color: '#0a58ca', fontSize: '1.2rem' }}></i>
-            <h4 style={{ color: '#0a58ca', fontWeight: 'bold', margin: 0 }}>
+            <i className="fa-solid fa-box" style={{ color: COLORS.COLOR_2, fontSize: '1.2rem' }}></i>
+            <h4 style={{ color: COLORS.COLOR_2, fontWeight: 'bold', margin: 0 }}>
               Cargando producto...
             </h4>
           </div>
           
           {/* Texto secundario */}
-          <p style={{ color: '#0a58ca', fontSize: '0.9rem', margin: 0 }}>
+          <p style={{ color: COLORS.COLOR_2, fontSize: '0.9rem', margin: 0 }}>
             Preparando los detalles
           </p>
         </div>
@@ -191,7 +193,11 @@ export const ProductDetailPage = () => {
         <Alert variant="danger">
           <Alert.Heading>Producto no encontrado</Alert.Heading>
           <p>El producto que buscas no existe o ha sido eliminado.</p>
-          <Button variant="primary" onClick={() => navigate('/store')}>
+          <Button 
+            variant="primary" 
+            onClick={() => navigate('/store')}
+            style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
+          >
             Volver a la Tienda
           </Button>
         </Alert>
@@ -248,7 +254,7 @@ export const ProductDetailPage = () => {
 
                     {/* Precio */}
                     <div className="mb-4">
-                      <h2 className="text-primary mb-2">
+                      <h2 style={{ color: COLORS.COLOR_3 }} className="mb-2">
                         ${product.price.toFixed(2)}
                       </h2>
                       <p className="text-muted">
@@ -326,7 +332,7 @@ export const ProductDetailPage = () => {
                           <span>
                             <strong>Subtotal ({quantity} {quantity === 1 ? 'unidad' : 'unidades'}):</strong>
                           </span>
-                          <h4 className="text-primary mb-0">
+                          <h4 style={{ color: COLORS.COLOR_3 }} className="mb-0">
                             ${(product.price * quantity).toFixed(2)}
                           </h4>
                         </div>
@@ -341,16 +347,18 @@ export const ProductDetailPage = () => {
                         onClick={handlePurchase}
                         disabled={product.stock <= 0}
                         className="mb-2"
+                        style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
                       >
                         <i className="fa-solid fa-credit-card me-2"></i>
                         Comprar Ahora
                       </Button>
 
                       <Button
-                        variant="outline-primary"
+                        variant="outline"
                         size="lg"
                         onClick={handleAddToCart}
                         disabled={product.stock <= 0}
+                        style={{ borderColor: COLORS.COLOR_3, color: COLORS.COLOR_3 }}
                       >
                         <i className="fa-solid fa-cart-plus me-2"></i>
                         Agregar al Carrito
@@ -359,6 +367,7 @@ export const ProductDetailPage = () => {
                       <Button
                         variant="outline-secondary"
                         onClick={() => navigate('/store')}
+                        style={{ borderColor: COLORS.COLOR_2, color: COLORS.COLOR_2 }}
                       >
                         <i className="fa-solid fa-arrow-left me-2"></i>
                         Volver a la Tienda

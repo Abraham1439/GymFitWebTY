@@ -19,6 +19,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
+// Importación de constantes de colores
+import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Purchase } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
@@ -299,7 +301,7 @@ export const CartPage = () => {
                               </small>
                             </td>
                             <td>
-                              <strong className="text-primary">
+                              <strong style={{ color: COLORS.COLOR_3 }}>
                                 ${(item.product.price * item.quantity).toFixed(2)}
                               </strong>
                             </td>
@@ -336,7 +338,7 @@ export const CartPage = () => {
                         <hr />
                         <div className="d-flex justify-content-between mb-3">
                           <h5>Total:</h5>
-                          <h5 className="text-primary">${getTotalPrice().toFixed(2)}</h5>
+                          <h5 style={{ color: COLORS.COLOR_3 }}>${getTotalPrice().toFixed(2)}</h5>
                         </div>
                         <Button
                           variant="primary"
@@ -347,6 +349,7 @@ export const CartPage = () => {
                             !authData.isAuthenticated ||
                             authData.user?.role !== UserRole.USER
                           }
+                          style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
                         >
                           <i className="fa-solid fa-credit-card me-2"></i>
                           Finalizar Compra

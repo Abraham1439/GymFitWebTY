@@ -2,6 +2,8 @@
 // Functional Component: Componente de React definido como funcion
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Breadcrumb } from 'react-bootstrap';
+// Importación de constantes de colores
+import { COLORS } from '../../constants';
 
 interface BreadcrumbItem {
   label: string;
@@ -78,7 +80,7 @@ export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
           }}
         >
           {item.path ? (
-            <span style={{ color: '#0d6efd' }}>{item.label}</span>
+            <span style={{ color: COLORS.COLOR_3 }}>{item.label}</span>
           ) : (
             item.label
           )}

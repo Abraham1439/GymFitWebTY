@@ -8,6 +8,8 @@ import { Container, Card, Form, Button, Alert, InputGroup } from 'react-bootstra
 
 // Importación del hook de autenticación
 import { useAuth } from '../../contexts/AuthContext';
+// Importación de constantes de colores
+import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { LoginData } from '../../interfaces/gym.interfaces';
 // Importación de helpers de validación
@@ -157,7 +159,7 @@ export const LoginPage = () => {
       {/* Card: Componente de Bootstrap para crear tarjetas */}
       <Card style={{ width: '400px', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
         {/* Card.Header: Encabezado de la tarjeta */}
-        <Card.Header className="text-center bg-primary text-white">
+        <Card.Header className="text-center text-white" style={{ backgroundColor: COLORS.COLOR_3 }}>
           <h3>Iniciar Sesión</h3>
         </Card.Header>
         
@@ -235,6 +237,7 @@ export const LoginPage = () => {
               variant="primary"                 // variant: Estilo del botón de Bootstrap
               className="w-100"                 // className: Clase CSS (w-100 = width 100%)
               disabled={loading}                // disabled: Desactiva el botón mientras carga
+              style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
             >
               {/* Condicional: Si está cargando muestra "Cargando...", sino "Iniciar Sesión" */}
               {loading ? 'Cargando...' : 'Iniciar Sesión'}

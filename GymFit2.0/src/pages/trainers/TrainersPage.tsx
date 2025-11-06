@@ -11,6 +11,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
 // Importación de URLs de imágenes
 import { TRAINER_IMAGES } from '../../mockData';
+// Importación de constantes de colores
+import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Trainer, TrainerHire } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
@@ -386,11 +388,11 @@ Su enfoque combina una sólida base científica (licenciatura en Biología) con 
                         onClick={() => navigate(`/trainer/${trainer.id}`)}
                         style={{
                           cursor: 'pointer',
-                          color: '#0d6efd',
+                          color: COLORS.COLOR_3,
                           transition: 'color 0.2s',
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = '#0a58ca')}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = '#0d6efd')}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.COLOR_2)}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.COLOR_3)}
                       >
                         {trainer.name}
                       </Card.Title>
@@ -419,7 +421,7 @@ Su enfoque combina una sólida base científica (licenciatura en Biología) con 
                       {/* Información del precio y botón */}
                       <div className="mt-auto">
                         {/* Precio por hora */}
-                        <h5 className="text-primary mb-3">
+                        <h5 style={{ color: COLORS.COLOR_3 }} className="mb-3">
                           ${trainer.price}/hora
                         </h5>
 
@@ -433,6 +435,7 @@ Su enfoque combina una sólida base científica (licenciatura en Biología) con 
                           className="w-100"
                           onClick={() => handleHireClick(trainer)}
                           disabled={!trainer.available || !authData.isAuthenticated || authData.user?.role !== UserRole.USER}
+                          style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
                         >
                           {/* Condicional: Si no está disponible muestra "No Disponible", sino "Contratar" */}
                           {trainer.available ? 'Contratar' : 'No Disponible'}
@@ -489,7 +492,11 @@ Su enfoque combina una sólida base científica (licenciatura en Biología) con 
             Cancelar
           </Button>
           {/* Button: Botón para confirmar */}
-          <Button variant="primary" onClick={confirmHire}>
+          <Button 
+            variant="primary" 
+            onClick={confirmHire}
+            style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
+          >
             Confirmar Contratación
           </Button>
         </Modal.Footer>

@@ -19,6 +19,8 @@ import {
 // Importación de hooks y helpers
 import { useAuth } from '../../contexts/AuthContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
+// Importación de constantes de colores
+import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Trainer, TrainerHire } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
@@ -176,7 +178,7 @@ export const TrainerDetailPage = () => {
       <div
         style={{
           minHeight: '100vh',
-          backgroundColor: '#f5f5f5',
+          backgroundColor: COLORS.COLOR_5,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -191,7 +193,7 @@ export const TrainerDetailPage = () => {
               width: '4rem',
               height: '4rem',
               borderWidth: '0.4rem',
-              borderColor: '#0a58ca',
+              borderColor: COLORS.COLOR_2,
               borderRightColor: 'transparent',
               marginBottom: '1.5rem',
             }}
@@ -201,14 +203,14 @@ export const TrainerDetailPage = () => {
           
           {/* Texto principal con ícono */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <i className="fa-solid fa-user-tie" style={{ color: '#0a58ca', fontSize: '1.2rem' }}></i>
-            <h4 style={{ color: '#0a58ca', fontWeight: 'bold', margin: 0 }}>
+            <i className="fa-solid fa-user-tie" style={{ color: COLORS.COLOR_2, fontSize: '1.2rem' }}></i>
+            <h4 style={{ color: COLORS.COLOR_2, fontWeight: 'bold', margin: 0 }}>
               Cargando entrenador...
             </h4>
           </div>
           
           {/* Texto secundario */}
-          <p style={{ color: '#0a58ca', fontSize: '0.9rem', margin: 0 }}>
+          <p style={{ color: COLORS.COLOR_2, fontSize: '0.9rem', margin: 0 }}>
             Preparando los detalles
           </p>
         </div>
@@ -223,7 +225,11 @@ export const TrainerDetailPage = () => {
         <Alert variant="danger">
           <Alert.Heading>Entrenador no encontrado</Alert.Heading>
           <p>El entrenador que buscas no existe o ha sido eliminado.</p>
-          <Button variant="primary" onClick={() => navigate('/trainers')}>
+          <Button 
+            variant="primary" 
+            onClick={() => navigate('/trainers')}
+            style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
+          >
             Volver a Entrenadores
           </Button>
         </Alert>
@@ -296,7 +302,7 @@ export const TrainerDetailPage = () => {
                         <i className="fa-solid fa-star text-warning"></i>{' '}
                         {trainer.rating.toFixed(1)}
                       </p>
-                      <h2 className="text-primary mb-2">
+                      <h2 style={{ color: COLORS.COLOR_3 }} className="mb-2">
                         ${trainer.price}/hora
                       </h2>
                     </div>
@@ -317,6 +323,7 @@ export const TrainerDetailPage = () => {
                         onClick={handleHire}
                         disabled={!trainer.available || !authData.isAuthenticated || authData.user?.role !== UserRole.USER}
                         className="mb-2"
+                        style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
                       >
                         <i className="fa-solid fa-handshake me-2"></i>
                         Contratar Entrenador
@@ -325,6 +332,7 @@ export const TrainerDetailPage = () => {
                       <Button
                         variant="outline-secondary"
                         onClick={() => navigate('/trainers')}
+                        style={{ borderColor: COLORS.COLOR_2, color: COLORS.COLOR_2 }}
                       >
                         <i className="fa-solid fa-arrow-left me-2"></i>
                         Volver a Entrenadores
@@ -391,7 +399,11 @@ export const TrainerDetailPage = () => {
             Cancelar
           </Button>
           {/* Button: Botón para confirmar */}
-          <Button variant="primary" onClick={confirmHire}>
+          <Button 
+            variant="primary" 
+            onClick={confirmHire}
+            style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
+          >
             Confirmar Contratación
           </Button>
         </Modal.Footer>

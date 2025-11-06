@@ -11,6 +11,8 @@ import { useCart } from '../../contexts/CartContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
 // Importación de URLs de imágenes
 import { PRODUCT_IMAGES } from '../../mockData';
+// Importación de constantes de colores
+import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Product } from '../../interfaces/gym.interfaces';
 
@@ -386,11 +388,11 @@ export const StorePage = () => {
                       onClick={() => navigate(`/product/${product.id}`)}
                       style={{
                         cursor: 'pointer',
-                        color: '#0d6efd',
+                        color: COLORS.COLOR_3,
                         transition: 'color 0.2s',
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#0a58ca')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#0d6efd')}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.COLOR_2)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.COLOR_3)}
                     >
                       {product.name}
                     </Card.Title>
@@ -401,7 +403,7 @@ export const StorePage = () => {
                     {/* Información del producto */}
                     <div className="mt-auto">
                       {/* Precio del producto */}
-                      <h5 className="text-primary mb-2">
+                      <h5 style={{ color: COLORS.COLOR_3 }} className="mb-2">
                         ${product.price.toFixed(2)} {/* toFixed: Formatea el número a 2 decimales */}
                       </h5>
 
@@ -420,6 +422,7 @@ export const StorePage = () => {
                         className="w-100 mb-2"
                         onClick={() => handlePurchase(product)}
                         disabled={product.stock <= 0}
+                        style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
                       >
                         {/* Condicional: Si no hay stock muestra "Agotado", sino "Comprar" */}
                         {product.stock <= 0 ? 'Agotado' : 'Comprar'}
@@ -430,7 +433,7 @@ export const StorePage = () => {
                       {/* onClick: Ejecuta la función de agregar al carrito */}
                       {/* disabled: Desactiva si no hay stock */}
                       <Button
-                        variant="outline-primary"
+                        variant="outline"
                         className="w-100"
                         onClick={() => {
                           if (product.stock <= 0) {
@@ -443,6 +446,7 @@ export const StorePage = () => {
                           setTimeout(() => setMessage(null), 3000);
                         }}
                         disabled={product.stock <= 0}
+                        style={{ borderColor: COLORS.COLOR_3, color: COLORS.COLOR_3 }}
                       >
                         <i className="fa-solid fa-cart-plus me-2"></i>
                         Agregar al carrito

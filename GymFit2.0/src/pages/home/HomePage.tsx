@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { getFromLocalStorage } from '../../helpers';
+// Importación de constantes de colores
+import { COLORS } from '../../constants';
 import type { Product } from '../../interfaces/gym.interfaces';
 
 const STORAGE_KEY_PRODUCTS = 'gymProducts';
@@ -110,17 +112,17 @@ export const HomePage = () => {
                               onClick={() => navigate(`/product/${product.id}`)}
                               style={{
                                 cursor: 'pointer',
-                                color: '#0d6efd',
+                                color: COLORS.COLOR_3,
                                 transition: 'color 0.2s',
                               }}
-                              onMouseEnter={(e) => (e.currentTarget.style.color = '#0a58ca')}
-                              onMouseLeave={(e) => (e.currentTarget.style.color = '#0d6efd')}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.COLOR_2)}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.COLOR_3)}
                             >
                               {product.name}
                             </Card.Title>
                             <Card.Text>{product.description}</Card.Text>
                             <div className="mt-auto">
-                              <h5 className="text-primary mb-2">
+                              <h5 style={{ color: COLORS.COLOR_3 }} className="mb-2">
                                 ${product.price.toFixed(2)}
                               </h5>
                               <p className="text-muted mb-2 small">
@@ -134,6 +136,7 @@ export const HomePage = () => {
                                   addToCart(product, 1);
                                 }}
                                 disabled={product.stock <= 0}
+                                style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
                               >
                                 {product.stock <= 0 ? 'Agotado' : 'Agregar al Carrito'}
                               </Button>
@@ -152,13 +155,17 @@ export const HomePage = () => {
               <Col md={authData.isAuthenticated ? 6 : 4} className="mb-4">
                 <Card className="h-100 text-center">
                   <Card.Body>
-                    <i className="fa-solid fa-shopping-cart fa-3x text-primary mb-3"></i>
+                    <i className="fa-solid fa-shopping-cart fa-3x mb-3" style={{ color: COLORS.COLOR_3 }}></i>
                     <Card.Title>Tienda de Productos</Card.Title>
                     <Card.Text>
                       Encuentra los mejores accesorios y suplementos para tu entrenamiento.
                       Tenemos una amplia variedad de productos de calidad.
                     </Card.Text>
-                    <Button variant="primary" onClick={() => navigate('/store')}>
+                    <Button 
+                      variant="primary" 
+                      onClick={() => navigate('/store')}
+                      style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
+                    >
                       Ver Tienda
                     </Button>
                   </Card.Body>
