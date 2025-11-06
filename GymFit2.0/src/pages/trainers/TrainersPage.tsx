@@ -70,7 +70,7 @@ export const TrainersPage = () => {
           price: 50,                            // Precio por hora
           description: 'Especialista en entrenamiento de fuerza y levantamiento de pesas', // Descripción
           rating: 4.8,                         // Calificación (0-5)
-          image: TRAINER_IMAGES.DEFAULT,       // URL de imagen desde mockData
+          image: TRAINER_IMAGES.CARLOS,        // URL de imagen específica de Carlos
           available: true                       // Disponible
         },
         // Entrenador 2
@@ -123,11 +123,8 @@ export const TrainersPage = () => {
           description: `Hany Rambod, apodado "The Pro Creator", es un entrenador de culturismo de élite y el fundador de Evogen Nutrition.
 
 Es más conocido por:
-
 • Entrenar a múltiples campeones de Mr. Olympia, sumando más de 25 títulos en total.
-
 • Ser el creador del revolucionario sistema de entrenamiento FST-7 (Fascia Stretch Training-7).
-
 • Haber entrenado a leyendas del deporte como Phil Heath, Jay Cutler, Chris Bumstead, Hadi Choopan y Derek Lunsford.
 
 Su enfoque combina una sólida base científica (licenciatura en Biología) con décadas de experiencia práctica para maximizar el potencial genético de sus atletas.`,
@@ -142,11 +139,19 @@ Su enfoque combina una sólida base científica (licenciatura en Biología) con 
       // Actualiza el estado con los entrenadores iniciales
       setTrainers(initialTrainers);
     } else {
-      // Si ya hay entrenadores, actualiza las imágenes si tienen URLs de placeholder
-      const updatedTrainers = savedTrainers.map((trainer) => {
+      // Si ya hay entrenadores, actualiza las imágenes si tienen URLs de placeholder o si es Carlos
+      let updatedTrainers = savedTrainers.map((trainer) => {
         // Si la imagen es un placeholder, actualízala
         const isPlaceholder = trainer.image.includes('placeholder.com') || 
                              trainer.image.includes('via.placeholder');
+        
+        // Si es Carlos Rodríguez, actualiza su imagen
+        if (trainer.name === 'Carlos Rodríguez' || trainer.name === 'Carlos Entrenador') {
+          return {
+            ...trainer,
+            image: TRAINER_IMAGES.CARLOS
+          };
+        }
         
         if (isPlaceholder) {
           return {
@@ -156,6 +161,39 @@ Su enfoque combina una sólida base científica (licenciatura en Biología) con 
         }
         return trainer;
       });
+      
+      // Verifica si Hany Rambod ya existe en los entrenadores
+      const hasHanyRambod = updatedTrainers.some((trainer) => 
+        trainer.name === 'Hany Rambod'
+      );
+      
+      // Si no existe Hany Rambod, agregarlo
+      if (!hasHanyRambod) {
+        const hanyRambod: Trainer = {
+          id: generateId(),
+          userId: generateId(),
+          name: 'Hany Rambod',
+          specialization: 'Culturismo de Élite',
+          experience: 25,
+          price: 150,
+          description: `Hany Rambod, apodado "The Pro Creator", es un entrenador de culturismo de élite y el fundador de Evogen Nutrition.
+
+Es más conocido por:
+
+• Entrenar a múltiples campeones de Mr. Olympia, sumando más de 25 títulos en total.
+
+• Ser el creador del revolucionario sistema de entrenamiento FST-7 (Fascia Stretch Training-7).
+
+• Haber entrenado a leyendas del deporte como Phil Heath, Jay Cutler, Chris Bumstead, Hadi Choopan y Derek Lunsford.
+
+Su enfoque combina una sólida base científica (licenciatura en Biología) con décadas de experiencia práctica para maximizar el potencial genético de sus atletas.`,
+          rating: 5.0,
+          image: TRAINER_IMAGES.HANY_RAMBOD,
+          available: true
+        };
+        
+        updatedTrainers.push(hanyRambod);
+      }
       
       // Guarda los entrenadores actualizados en localStorage
       saveToLocalStorage(STORAGE_KEY_TRAINERS, updatedTrainers);

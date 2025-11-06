@@ -13,17 +13,19 @@ import {
   Button,
   Badge,
   Alert,
+  Modal,
 } from 'react-bootstrap';
 
 // Importación de hooks y helpers
 import { useAuth } from '../../contexts/AuthContext';
-import { getFromLocalStorage } from '../../helpers';
+import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
 // Importación de tipos e interfaces
-import type { Trainer } from '../../interfaces/gym.interfaces';
+import type { Trainer, TrainerHire } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
 
 // Constante para la clave de localStorage
 const STORAGE_KEY_TRAINERS = 'gymTrainers';
+const STORAGE_KEY_HIRES = 'gymHires';
 
 // Componente de página de detalles de entrenador
 export const TrainerDetailPage = () => {
@@ -43,6 +45,7 @@ export const TrainerDetailPage = () => {
     type: 'success' | 'danger';
     text: string;
   } | null>(null);
+  const [showHireModal, setShowHireModal] = useState<boolean>(false);
 
   // useEffect: Hook de React que ejecuta efectos secundarios
   // Carga el entrenador cuando cambia el ID de la URL
@@ -81,7 +84,7 @@ export const TrainerDetailPage = () => {
   };
 
   /**
-   * Maneja el botón de contratar
+   * Maneja el botón de contratar - abre el modal de confirmación
    */
   const handleHire = (): void => {
     if (!trainer) return;
@@ -107,8 +110,64 @@ export const TrainerDetailPage = () => {
       return;
     }
 
-    // Redirige a la página de entrenadores
-    navigate('/trainers');
+    // Abre el modal de confirmación
+    setShowHireModal(true);
+  };
+
+  /**
+   * Confirma la contratación del entrenador
+   */
+  const confirmHire = (): void => {
+    // Verifica que haya un entrenador y usuario autenticado
+    if (!trainer || !authData.user) {
+      return;
+    }
+
+    try {
+      // Obtiene las contrataciones existentes
+      const hires = getFromLocalStorage<TrainerHire[]>(STORAGE_KEY_HIRES) || [];
+
+      // Verifica si el usuario ya contrató este entrenador
+      const alreadyHired = hires.some(
+        (h) => h.userId === authData.user!.id && h.trainerId === trainer.id && h.status === 'active'
+      );
+
+      if (alreadyHired) {
+        setMessage({ type: 'danger', text: 'Ya tienes contratado a este entrenador' });
+        setTimeout(() => setMessage(null), 3000);
+        setShowHireModal(false);
+        return;
+      }
+
+      // Crea una nueva contratación
+      const newHire: TrainerHire = {
+        id: generateId(),
+        userId: authData.user.id,
+        trainerId: trainer.id,
+        startDate: new Date().toISOString(),
+        status: 'active',
+        messages: []
+      };
+
+      // Agrega la nueva contratación al array
+      hires.push(newHire);
+
+      // Guarda las contrataciones actualizadas en localStorage
+      saveToLocalStorage(STORAGE_KEY_HIRES, hires);
+
+      // Muestra mensaje de éxito
+      setMessage({ type: 'success', text: `¡Has contratado a ${trainer.name}!` });
+      setTimeout(() => setMessage(null), 3000);
+
+      // Cierra el modal
+      setShowHireModal(false);
+
+    } catch (error) {
+      // Manejo de errores
+      console.error('Error al contratar entrenador:', error);
+      setMessage({ type: 'danger', text: 'Error al contratar el entrenador' });
+      setTimeout(() => setMessage(null), 3000);
+    }
   };
 
   // Si está cargando, muestra pantalla de carga estilizada
@@ -132,7 +191,7 @@ export const TrainerDetailPage = () => {
               width: '4rem',
               height: '4rem',
               borderWidth: '0.4rem',
-              borderColor: '#6f42c1',
+              borderColor: '#0a58ca',
               borderRightColor: 'transparent',
               marginBottom: '1.5rem',
             }}
@@ -142,14 +201,14 @@ export const TrainerDetailPage = () => {
           
           {/* Texto principal con ícono */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <i className="fa-solid fa-user-tie" style={{ color: '#6f42c1', fontSize: '1.2rem' }}></i>
-            <h4 style={{ color: '#6f42c1', fontWeight: 'bold', margin: 0 }}>
+            <i className="fa-solid fa-user-tie" style={{ color: '#0a58ca', fontSize: '1.2rem' }}></i>
+            <h4 style={{ color: '#0a58ca', fontWeight: 'bold', margin: 0 }}>
               Cargando entrenador...
             </h4>
           </div>
           
           {/* Texto secundario */}
-          <p style={{ color: '#6c757d', fontSize: '0.9rem', margin: 0 }}>
+          <p style={{ color: '#0a58ca', fontSize: '0.9rem', margin: 0 }}>
             Preparando los detalles
           </p>
         </div>
@@ -295,6 +354,48 @@ export const TrainerDetailPage = () => {
           </Col>
         </Row>
       </Container>
+
+      {/* Modal: Componente de Bootstrap para mostrar diálogos */}
+      <Modal show={showHireModal} onHide={() => setShowHireModal(false)}>
+        {/* Modal.Header: Encabezado del modal */}
+        <Modal.Header closeButton>
+          {/* closeButton: Muestra un botón de cerrar */}
+          <Modal.Title>Confirmar Contratación</Modal.Title>
+        </Modal.Header>
+        
+        {/* Modal.Body: Cuerpo del modal */}
+        <Modal.Body>
+          {trainer && (
+            <>
+              {/* Información del entrenador seleccionado */}
+              <p>
+                ¿Estás seguro de que deseas contratar a <strong>{trainer.name}</strong>?
+              </p>
+              <p>
+                <strong>Especialización:</strong> {trainer.specialization}
+              </p>
+              <p>
+                <strong>Precio:</strong> ${trainer.price}/hora
+              </p>
+              <p className="text-muted">
+                Una vez contratado, podrás comunicarte con tu entrenador desde tu panel de usuario.
+              </p>
+            </>
+          )}
+        </Modal.Body>
+        
+        {/* Modal.Footer: Pie del modal */}
+        <Modal.Footer>
+          {/* Button: Botón para cancelar */}
+          <Button variant="secondary" onClick={() => setShowHireModal(false)}>
+            Cancelar
+          </Button>
+          {/* Button: Botón para confirmar */}
+          <Button variant="primary" onClick={confirmHire}>
+            Confirmar Contratación
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

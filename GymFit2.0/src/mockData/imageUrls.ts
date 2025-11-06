@@ -23,5 +23,6 @@ export const PRODUCT_IMAGES = {
 export const TRAINER_IMAGES = {
   DEFAULT: 'https://cdn.shopify.com/s/files/1/0032/5736/8611/files/HanyRambod_1080_480x480.jpg?v=1566268070',
   HANY_RAMBOD: 'https://cdn.shopify.com/s/files/1/0032/5736/8611/files/HanyRambod_1080_480x480.jpg?v=1566268070',
+  CARLOS: 'https://fivestarsfitness.com/wp-content/uploads/Preguntas-que-debe-hacer-un-entrenador-personal.jpg',
 } as const;
 
