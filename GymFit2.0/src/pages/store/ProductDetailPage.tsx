@@ -29,30 +29,40 @@ const STORAGE_KEY_PRODUCTS = 'gymProducts';
 // Componente de página de detalles de producto
 export const ProductDetailPage = () => {
   // useParams: Hook que obtiene los parámetros de la URL
+  // Se utiliza para extraer el ID del producto desde la ruta /product/:id
   const { id } = useParams<{ id: string }>();
   
   // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para redirigir al usuario de vuelta a la tienda o al carrito
   const navigate = useNavigate();
   
   // useCart: Hook personalizado que retorna las funciones del carrito
+  // Se utiliza para agregar el producto al carrito con la cantidad seleccionada
   const { addToCart } = useCart();
 
   // useState: Hook de React para gestionar estado local
+  // Estado para almacenar el producto actual que se está mostrando
   const [product, setProduct] = useState<Product | null>(null);
+  
+  // Estado para controlar si se está cargando el producto (muestra pantalla de carga)
   const [loading, setLoading] = useState<boolean>(true);
+  
+  // Estado para mensajes de éxito/error que se muestran al usuario
   const [message, setMessage] = useState<{
     type: 'success' | 'danger';
     text: string;
   } | null>(null);
+  
+  // Estado para la cantidad de productos que el usuario quiere comprar
   const [quantity, setQuantity] = useState<number>(1);
 
   // useEffect: Hook de React que ejecuta efectos secundarios
-  // Carga el producto cuando cambia el ID de la URL
+  // Carga el producto cuando cambia el ID de la URL (cuando el usuario navega entre productos)
   useEffect(() => {
     if (id) {
       loadProduct(id);
     }
-  }, [id]);
+  }, [id]); // Se ejecuta cada vez que el parámetro 'id' cambia
 
   /**
    * Carga un producto específico desde localStorage

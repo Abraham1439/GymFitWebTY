@@ -20,6 +20,8 @@ const STORAGE_KEY_PRODUCTS = 'gymProducts';    // Clave para almacenar productos
 // Functional Component: Componente funcional de React
 export const AdminPanel = () => {
   // useAuth: Hook personalizado que retorna los datos de autenticación
+  // Se utiliza para verificar que el usuario esté autenticado y sea administrador
+  // También se usa para prevenir que el admin elimine su propia cuenta
   const { authData } = useAuth();
 
   // useState: Hook de React para gestionar estado local
@@ -70,7 +72,8 @@ export const AdminPanel = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'danger'; text: string } | null>(null); // null = sin mensaje
 
   // useEffect: Hook de React que ejecuta efectos secundarios
-  // Efecto que se ejecuta al montar el componente para cargar datos
+  // Efecto que se ejecuta al montar el componente para cargar datos iniciales
+  // Carga todos los usuarios y productos que el administrador puede gestionar
   useEffect(() => {
     // Carga los usuarios desde localStorage
     loadUsers();

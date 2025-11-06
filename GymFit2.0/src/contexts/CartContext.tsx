@@ -33,21 +33,25 @@ interface CartProviderProps {
 // Componente proveedor del contexto del carrito
 export const CartProvider = ({ children }: CartProviderProps) => {
   // useState: Hook de React para gestionar estado local
+  // Estado global que almacena todos los productos agregados al carrito de compras
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // useEffect: Hook de React que ejecuta efectos secundarios
-  // Carga el carrito desde localStorage al montar el componente
+  // Carga el carrito guardado desde localStorage al montar el componente (al iniciar la aplicación)
+  // Esto permite que el carrito persista entre recargas de página
   useEffect(() => {
     const savedCart = getFromLocalStorage<CartItem[]>(STORAGE_KEY_CART);
     if (savedCart) {
       setCartItems(savedCart);
     }
-  }, []);
+  }, []); // Array de dependencias vacío: se ejecuta solo al montar el componente
 
-  // useEffect: Guarda el carrito en localStorage cuando cambia
+  // useEffect: Hook de React que ejecuta efectos secundarios
+  // Guarda automáticamente el carrito en localStorage cada vez que cambia
+  // Esto asegura que los cambios en el carrito se persistan inmediatamente
   useEffect(() => {
     saveToLocalStorage(STORAGE_KEY_CART, cartItems);
-  }, [cartItems]);
+  }, [cartItems]); // Se ejecuta cada vez que cartItems cambia
 
   /**
    * Agrega un producto al carrito
@@ -144,12 +148,24 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 /**
  * Hook personalizado para usar el contexto del carrito
  * @returns Contexto del carrito
+ * 
+ * Este hook utiliza useContext internamente para acceder al CartContext
+ * Permite a cualquier componente acceder a los items del carrito y funciones
+ * (addToCart, removeFromCart, updateQuantity, etc.) sin necesidad de pasar props manualmente
  */
 export const useCart = (): CartContextType => {
+  // useContext: Hook de React que permite acceder a un contexto
+  // Lee el valor del CartContext más cercano en el árbol de componentes
+  // Este hook es la forma de acceder al estado global del carrito de compras
   const context = useContext(CartContext);
+  
+  // Si el contexto no está definido (se usa fuera del Provider), lanza un error
+  // Esto previene errores silenciosos y ayuda a identificar problemas de configuración
   if (!context) {
     throw new Error('useCart debe ser usado dentro de un CartProvider');
   }
+  
+  // Retorna el contexto con todos los datos y funciones del carrito
   return context;
 };
 

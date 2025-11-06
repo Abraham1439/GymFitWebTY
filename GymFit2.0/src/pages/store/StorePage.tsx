@@ -23,9 +23,11 @@ const STORAGE_KEY_PRODUCTS = 'gymProducts';    // Clave para almacenar productos
 // Functional Component: Componente funcional de React
 export const StorePage = () => {
   // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para redirigir al usuario al carrito después de agregar un producto
   const navigate = useNavigate();
 
   // useCart: Hook personalizado que retorna las funciones del carrito
+  // Se utiliza para agregar productos al carrito desde la tienda
   const { addToCart } = useCart();
 
   // useState: Hook de React para gestionar estado local

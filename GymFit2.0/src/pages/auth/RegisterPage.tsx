@@ -18,9 +18,11 @@ import { isValidEmail, isValidPassword, passwordsMatch } from '../../helpers';
 // Functional Component: Componente funcional de React
 export const RegisterPage = () => {
   // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para redirigir al usuario a la página de login después de un registro exitoso
   const navigate = useNavigate();
   
   // useAuth: Hook personalizado que retorna las funciones de autenticación
+  // Se utiliza para ejecutar la función de registro que crea un nuevo usuario en el sistema
   const { register } = useAuth();
 
   // useState: Hook de React para gestionar estado local

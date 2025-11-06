@@ -25,9 +25,11 @@ const STORAGE_KEY_HIRES = 'gymHires';          // Clave para almacenar contratac
 // Functional Component: Componente funcional de React
 export const TrainersPage = () => {
   // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para navegar a la página de detalles de un entrenador cuando se hace clic en su tarjeta
   const navigate = useNavigate();
   
   // useAuth: Hook personalizado que retorna los datos de autenticación
+  // Se utiliza para verificar si el usuario está autenticado antes de permitir la contratación
   const { authData } = useAuth();
 
   // useState: Hook de React para gestionar estado local

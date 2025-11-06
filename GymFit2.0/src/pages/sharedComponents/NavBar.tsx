@@ -17,15 +17,19 @@ import { UserRole } from '../../interfaces/gym.interfaces';
 // Functional Component: Componente funcional de React
 export const NavBar = () => {
   // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para navegar a diferentes páginas cuando el usuario hace clic en los enlaces del menú
   const navigate = useNavigate();
   
-  // useLocation: Hook que retorna la ubicación actual
+  // useLocation: Hook que retorna la ubicación actual de la ruta
+  // Se utiliza para resaltar el enlace activo en el menú de navegación según la página actual
   const location = useLocation();
   
   // useAuth: Hook personalizado que retorna los datos y funciones de autenticación
+  // Se utiliza para mostrar/ocultar opciones del menú según el estado de autenticación y el rol del usuario
   const { authData, logout } = useAuth();
   
   // useCart: Hook personalizado que retorna las funciones del carrito
+  // Se utiliza para mostrar la cantidad de items en el carrito en el badge del icono
   const { getTotalItems } = useCart();
 
   /**

@@ -19,9 +19,11 @@ import { isValidEmail } from '../../helpers';
 // Functional Component: Componente funcional de React
 export const LoginPage = () => {
   // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para redirigir al usuario a la página principal después de un login exitoso
   const navigate = useNavigate();
   
   // useAuth: Hook personalizado que retorna las funciones y datos de autenticación
+  // Se utiliza para ejecutar la función de login que valida las credenciales del usuario
   const { login } = useAuth();
 
   // useState: Hook de React para gestionar estado local

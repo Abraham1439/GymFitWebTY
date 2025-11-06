@@ -15,7 +15,12 @@ interface BreadcrumbsProps {
 }
 
 export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
+  // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para navegar a las rutas cuando el usuario hace clic en un breadcrumb
   const navigate = useNavigate();
+  
+  // useLocation: Hook que retorna la ubicación actual de la ruta
+  // Se utiliza para generar los breadcrumbs automáticamente basados en la URL actual
   const location = useLocation();
 
   // Breadcrumbs por defecto basados en la ruta actual

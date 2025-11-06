@@ -20,6 +20,7 @@ const STORAGE_KEY_TRAINERS = 'gymTrainers';    // Clave para almacenar entrenado
 // Functional Component: Componente funcional de React
 export const TrainerPanel = () => {
   // useAuth: Hook personalizado que retorna los datos de autenticación
+  // Se utiliza para obtener el ID del entrenador autenticado y cargar sus clientes contratados
   const { authData } = useAuth();
 
   // useState: Hook de React para gestionar estado local
@@ -42,9 +43,10 @@ export const TrainerPanel = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'danger'; text: string } | null>(null); // null = sin mensaje
 
   // useEffect: Hook de React que ejecuta efectos secundarios
-  // Efecto que se ejecuta al montar el componente para cargar datos
+  // Efecto que se ejecuta al montar el componente para cargar datos del entrenador
+  // También se ejecuta cuando cambia el usuario autenticado para actualizar la información
   useEffect(() => {
-    // Carga los datos del entrenador
+    // Carga los datos del entrenador (clientes contratados y mensajes)
     loadTrainerData();
   }, [authData.user]); // Se ejecuta cuando cambia el usuario autenticado
 

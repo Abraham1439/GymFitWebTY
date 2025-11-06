@@ -12,17 +12,29 @@ import type { Product } from '../../interfaces/gym.interfaces';
 const STORAGE_KEY_PRODUCTS = 'gymProducts';
 
 export const HomePage = () => {
+  // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para navegar a diferentes secciones de la aplicación (tienda, entrenadores, registro)
   const navigate = useNavigate();
+  
+  // useAuth: Hook personalizado que retorna los datos de autenticación
+  // Se utiliza para verificar si el usuario está autenticado y mostrar/ocultar secciones según corresponda
   const { authData } = useAuth();
+  
+  // useCart: Hook personalizado que retorna las funciones del carrito
+  // Se utiliza para agregar productos destacados al carrito directamente desde la página principal
   const { addToCart } = useCart();
+  
+  // useState: Hook de React para gestionar estado local
+  // Estado para almacenar los productos destacados que se muestran en la página principal
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
 
-  // Cargar los primeros 3 productos como destacados
+  // useEffect: Hook de React que ejecuta efectos secundarios
+  // Carga los primeros 3 productos como destacados al montar el componente
   useEffect(() => {
     const products = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
     // Toma los primeros 3 productos
     setFeaturedProducts(products.slice(0, 3));
-  }, []);
+  }, []); // Array de dependencias vacío: se ejecuta solo al montar
 
   return (
     // Eliminamos cualquier padding/margin extra del contenedor principal

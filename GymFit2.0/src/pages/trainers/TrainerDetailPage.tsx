@@ -32,30 +32,40 @@ const STORAGE_KEY_HIRES = 'gymHires';
 // Componente de página de detalles de entrenador
 export const TrainerDetailPage = () => {
   // useParams: Hook que obtiene los parámetros de la URL
+  // Se utiliza para extraer el ID del entrenador desde la ruta /trainer/:id
   const { id } = useParams<{ id: string }>();
   
   // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para redirigir al usuario de vuelta a la lista de entrenadores
   const navigate = useNavigate();
   
   // useAuth: Hook personalizado que retorna los datos de autenticación
+  // Se utiliza para verificar si el usuario está autenticado antes de permitir la contratación
   const { authData } = useAuth();
 
   // useState: Hook de React para gestionar estado local
+  // Estado para almacenar el entrenador actual que se está mostrando
   const [trainer, setTrainer] = useState<Trainer | null>(null);
+  
+  // Estado para controlar si se está cargando el entrenador (muestra pantalla de carga)
   const [loading, setLoading] = useState<boolean>(true);
+  
+  // Estado para mensajes de éxito/error que se muestran al usuario
   const [message, setMessage] = useState<{
     type: 'success' | 'danger';
     text: string;
   } | null>(null);
+  
+  // Estado para controlar si el modal de confirmación de contratación está visible
   const [showHireModal, setShowHireModal] = useState<boolean>(false);
 
   // useEffect: Hook de React que ejecuta efectos secundarios
-  // Carga el entrenador cuando cambia el ID de la URL
+  // Carga el entrenador cuando cambia el ID de la URL (cuando el usuario navega entre entrenadores)
   useEffect(() => {
     if (id) {
       loadTrainer(id);
     }
-  }, [id]);
+  }, [id]); // Se ejecuta cada vez que el parámetro 'id' cambia
 
   /**
    * Carga un entrenador específico desde localStorage

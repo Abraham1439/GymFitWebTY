@@ -51,7 +51,8 @@ interface AuthProviderProps {
 // Functional Component: Componente de React definido como función
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   // useState: Hook de React que gestiona el estado del componente
-  // Estado para almacenar los datos de autenticación
+  // Estado global que almacena los datos de autenticación del usuario actual
+  // Este estado es compartido con todos los componentes hijos a través del contexto
   const [authData, setAuthData] = useState<AuthData>({
     user: null,                              // Usuario autenticado (inicialmente null)
     isAuthenticated: false                   // Estado de autenticación (inicialmente false)
@@ -59,11 +60,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // useEffect: Hook de React que ejecuta efectos secundarios
   // Efecto que se ejecuta al montar el componente para cargar la sesión guardada
+  // Restaura la sesión del usuario si había una sesión activa guardada en localStorage
+  // Si no hay sesión, inicializa los datos por primera vez (crea usuarios por defecto)
   useEffect(() => {
     // Carga el usuario autenticado desde localStorage si existe
     const savedAuth = getFromLocalStorage<AuthData>(STORAGE_KEY_AUTH);
     if (savedAuth && savedAuth.user) {
-      // setState: Actualiza el estado del componente
+      // setState: Actualiza el estado del componente con la sesión guardada
       setAuthData(savedAuth);
     } else {
       // Si no hay sesión guardada, inicializa los datos por primera vez
@@ -302,17 +305,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
  * Hook personalizado para usar el contexto de autenticación
  * @returns El contexto de autenticación
  * Custom Hook: Hook personalizado que encapsula lógica reutilizable
+ * 
+ * Este hook utiliza useContext internamente para acceder al AuthContext
+ * Permite a cualquier componente acceder a los datos de autenticación y funciones
+ * (login, register, logout) sin necesidad de pasar props manualmente
  */
 export const useAuth = (): AuthContextType => {
   // useContext: Hook de React que permite acceder a un contexto
+  // Lee el valor del AuthContextValue más cercano en el árbol de componentes
+  // Este hook es la forma de acceder al estado global de autenticación
   const context = useContext(AuthContextValue);
 
   // Si el contexto no está definido (se usa fuera del Provider), lanza un error
+  // Esto previene errores silenciosos y ayuda a identificar problemas de configuración
   if (context === undefined) {
     throw new Error('useAuth debe usarse dentro de un AuthProvider');
   }
 
-  // Retorna el contexto
+  // Retorna el contexto con todos los datos y funciones de autenticación
   return context;
 };
 

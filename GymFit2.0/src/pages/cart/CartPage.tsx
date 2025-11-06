@@ -31,18 +31,27 @@ const STORAGE_KEY_PRODUCTS = 'gymProducts';
 
 // Componente de página del carrito
 export const CartPage = () => {
+  // useNavigate: Hook que retorna una función para navegar programáticamente
+  // Se utiliza para redirigir al usuario después de finalizar la compra
   const navigate = useNavigate();
+  
+  // useAuth: Hook personalizado que retorna los datos de autenticación
+  // Se utiliza para verificar si el usuario está autenticado antes de permitir la compra
   const { authData } = useAuth();
+  
+  // useCart: Hook personalizado que retorna las funciones y datos del carrito
+  // Se utiliza para acceder a los items del carrito y las funciones para gestionarlos
   const {
-    cartItems,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    getTotalItems,
-    getTotalPrice,
+    cartItems,        // Array de productos en el carrito
+    removeFromCart,   // Función para eliminar un producto del carrito
+    updateQuantity,   // Función para actualizar la cantidad de un producto
+    clearCart,        // Función para vaciar completamente el carrito
+    getTotalItems,    // Función para obtener el total de items en el carrito
+    getTotalPrice,    // Función para obtener el precio total del carrito
   } = useCart();
 
-  // Estado para mensajes
+  // useState: Hook de React para gestionar estado local
+  // Estado para mensajes de éxito/error que se muestran al usuario
   const [message, setMessage] = useState<{
     type: 'success' | 'danger';
     text: string;
