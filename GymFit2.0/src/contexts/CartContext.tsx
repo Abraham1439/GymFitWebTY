@@ -1,6 +1,6 @@
 // Contexto de React para manejar el carrito de compras globalmente
 // Context: API de React que permite compartir datos sin pasar props manualmente
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 // Importación de interfaces y tipos
 import type { CartItem, Product } from '../interfaces/gym.interfaces';

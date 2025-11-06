@@ -1,10 +1,13 @@
 // Enumeración para definir los roles de usuario en el sistema
-// Enum: Tipo de datos TypeScript que permite definir un conjunto de constantes con nombre
-export enum UserRole {
-  ADMIN = 'admin',        // Rol de administrador: puede gestionar usuarios
-  USER = 'user',          // Rol de usuario: puede comprar productos y contratar entrenadores
-  TRAINER = 'trainer'     // Rol de entrenador: puede responder a usuarios y ver sus clientes
-}
+// Objeto constante: Define un conjunto de constantes con nombre (compatible con erasableSyntaxOnly)
+export const UserRole = {
+  ADMIN: 'admin',        // Rol de administrador: puede gestionar usuarios
+  USER: 'user',          // Rol de usuario: puede comprar productos y contratar entrenadores
+  TRAINER: 'trainer'     // Rol de entrenador: puede responder a usuarios y ver sus clientes
+} as const;
+
+// Tipo derivado del objeto constante para usar como tipo
+export type UserRole = typeof UserRole[keyof typeof UserRole];
 
 // Interfaz que define la estructura de un usuario en el sistema
 // Interface: Contrato TypeScript que define la forma de un objeto

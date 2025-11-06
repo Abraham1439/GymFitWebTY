@@ -120,7 +120,7 @@ export const RegisterPage = () => {
    * @param e - Evento de cambio del input
    * Event: Tipo de evento de React
    */
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>): void => {
     // Obtiene el nombre y valor del campo que cambió
     const { name, value } = e.target;
     

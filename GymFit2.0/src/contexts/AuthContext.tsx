@@ -1,7 +1,7 @@
 // Contexto de React para manejar la autenticación globalmente
 // Context: API de React que permite compartir datos sin pasar props manualmente
 // createContext: Función de React que crea un nuevo contexto
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 // Importación de interfaces y tipos
 import type { User, AuthData, LoginData, RegisterData, Trainer, Product } from '../interfaces/gym.interfaces';
