@@ -216,7 +216,7 @@ export const NavBar = () => {
                   {/* NavDropdown.Item: Elemento del menú desplegable */}
                   <NavDropdown.Item disabled>
                     {/* Texto informativo del usuario */}
-                    <small className="text-muted">
+                    <small className="text-white">
                       {authData.user?.email}   {/* Email del usuario */}
                     </small>
                   </NavDropdown.Item>
