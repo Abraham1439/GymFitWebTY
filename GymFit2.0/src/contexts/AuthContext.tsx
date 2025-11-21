@@ -18,6 +18,9 @@ import {
   generateId
 } from '../helpers';
 
+// Importación del servicio API
+import { usuarioAPI, mapUsuarioToUser } from '../services/api';
+
 // Constantes para las claves de localStorage
 // const: Declaración de constante que no puede ser reasignada
 const STORAGE_KEY_USERS = 'gymUsers';        // Clave para almacenar usuarios en localStorage
@@ -162,34 +165,58 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return false;                        // Retorna false si el email no es válido
       }
 
-      // Obtiene todos los usuarios de localStorage
-      const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+      // Intenta hacer login con la API del microservicio
+      try {
+        const usuarioBackend = await usuarioAPI.login(data.email, data.password);
+        
+        // Mapea el usuario del backend al formato del frontend
+        const user: User = {
+          id: usuarioBackend.id_usuario.toString(),
+          email: usuarioBackend.email,
+          password: '', // No guardamos la contraseña en el frontend
+          name: usuarioBackend.username,
+          role: usuarioBackend.rolId === 1 ? UserRole.ADMIN : 
+                usuarioBackend.rolId === 2 ? UserRole.USER : UserRole.TRAINER,
+          createdAt: new Date().toISOString(),
+          phone: usuarioBackend.phone
+        };
 
-      // Busca el usuario por email y contraseña
-      // find: Método de array que retorna el primer elemento que cumple la condición
-      const user = users.find(
-        (u) => u.email === data.email && u.password === data.password
-      );
+        // Crea los datos de autenticación
+        const newAuthData: AuthData = {
+          user: user,
+          isAuthenticated: true
+        };
 
-      // Si no se encuentra el usuario, retorna false
-      if (!user) {
-        return false;
+        // Actualiza el estado local
+        setAuthData(newAuthData);
+
+        // Guarda la sesión en localStorage
+        saveToLocalStorage(STORAGE_KEY_AUTH, newAuthData);
+
+        // Retorna true indicando login exitoso
+        return true;
+      } catch (apiError: any) {
+        // Si la API falla, intenta con localStorage como fallback
+        console.warn('API no disponible, usando localStorage:', apiError);
+        
+        const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+        const user = users.find(
+          (u) => u.email === data.email && u.password === data.password
+        );
+
+        if (!user) {
+          return false;
+        }
+
+        const newAuthData: AuthData = {
+          user: user,
+          isAuthenticated: true
+        };
+
+        setAuthData(newAuthData);
+        saveToLocalStorage(STORAGE_KEY_AUTH, newAuthData);
+        return true;
       }
-
-      // Crea los datos de autenticación
-      const newAuthData: AuthData = {
-        user: user,                          // Usuario encontrado
-        isAuthenticated: true                 // Estado de autenticación en true
-      };
-
-      // Actualiza el estado local
-      setAuthData(newAuthData);
-
-      // Guarda la sesión en localStorage
-      saveToLocalStorage(STORAGE_KEY_AUTH, newAuthData);
-
-      // Retorna true indicando login exitoso
-      return true;
     } catch (error) {
       // Manejo de errores: registra el error en consola
       console.error('Error en login:', error);
@@ -230,42 +257,60 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return false;
       }
 
-      // Obtiene todos los usuarios existentes
-      const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+      // Intenta registrar con la API del microservicio
+      try {
+        const usuarioBackend = await usuarioAPI.register({
+          username: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          password: data.password,
+          rolId: 2 // 2 = Usuario (1 = Admin, 2 = Usuario, 3 = Vendedor/Moderador)
+        });
 
-      // Verifica si el email ya está registrado
-      // some: Método de array que retorna true si algún elemento cumple la condición
-      const emailExists = users.some((u) => u.email === data.email);
+        // Mapea el usuario del backend al formato del frontend
+        const newUser: User = {
+          id: usuarioBackend.id_usuario.toString(),
+          email: usuarioBackend.email,
+          password: '', // No guardamos la contraseña
+          name: usuarioBackend.username,
+          role: UserRole.USER,
+          createdAt: new Date().toISOString(),
+          phone: usuarioBackend.phone
+        };
 
-      // Si el email ya existe, retorna false
-      if (emailExists) {
-        return false;
+        // Guarda también en localStorage como backup
+        const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+        users.push(newUser);
+        saveToLocalStorage(STORAGE_KEY_USERS, users);
+
+        // Retorna true indicando registro exitoso
+        return true;
+      } catch (apiError: any) {
+        // Si la API falla, intenta con localStorage como fallback
+        console.warn('API no disponible, usando localStorage:', apiError);
+        
+        const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+        const emailExists = users.some((u) => u.email === data.email);
+
+        if (emailExists) {
+          return false;
+        }
+
+        const newUser: User = {
+          id: generateId(),
+          email: data.email,
+          password: data.password,
+          name: data.name,
+          role: UserRole.USER,
+          createdAt: new Date().toISOString(),
+          phone: data.phone,
+          address: data.address
+        };
+
+        users.push(newUser);
+        saveToLocalStorage(STORAGE_KEY_USERS, users);
+        return true;
       }
-
-      // Crea el nuevo usuario
-      // Siempre se registra como USER: Solo el admin puede asignar otros roles
-      const newUser: User = {
-        id: generateId(),                    // Genera un ID único
-        email: data.email,                   // Email del nuevo usuario
-        password: data.password,            // Contraseña (en producción debería estar hasheada)
-        name: data.name,                     // Nombre del nuevo usuario
-        role: UserRole.USER,                 // Rol siempre USER: Solo el admin puede asignar otros roles
-        createdAt: new Date().toISOString(), // Fecha de creación en formato ISO
-        phone: data.phone,                   // Teléfono opcional
-        address: data.address                // Dirección opcional
-      };
-
-      // Agrega el nuevo usuario al array
-      users.push(newUser);
-
-      // Guarda los usuarios actualizados en localStorage
-      saveToLocalStorage(STORAGE_KEY_USERS, users);
-
-      // Nota: No se crea perfil de entrenador automáticamente
-      // Solo el admin puede asignar el rol de entrenador y crear el perfil correspondiente
-
-      // Retorna true indicando registro exitoso
-      return true;
     } catch (error) {
       // Manejo de errores
       console.error('Error en registro:', error);
