@@ -12,7 +12,7 @@ interface UsuarioBackend {
   id_usuario: number;
   username: string;
   email: string;
-  phone: string;
+  phone: string | null;
   rolId: number;
 }
 
@@ -85,7 +85,7 @@ export const usuarioAPI = {
   register: async (usuario: {
     username: string;
     email: string;
-    phone: string;
+    phone?: string | null;
     password: string;
     rolId: number;
   }): Promise<UsuarioBackend> => {

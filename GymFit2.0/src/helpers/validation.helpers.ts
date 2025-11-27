@@ -66,6 +66,26 @@ export const passwordsMatch = (password: string, confirmPassword: string): boole
 };
 
 /**
+ * Valida si un teléfono tiene formato válido
+ * @param phone - Teléfono a validar (string)
+ * @returns true si el teléfono es válido o está vacío, false si tiene formato inválido
+ */
+export const isValidPhone = (phone: string): boolean => {
+  // Si está vacío, es válido (es opcional)
+  if (!phone || phone.trim().length === 0) {
+    return true;
+  }
+  // Validar formato: 8-15 dígitos, puede empezar con +
+  // ^\\+?[0-9]{8,15}$: Patrón regex que valida formato de teléfono
+  // ^: Inicio de la cadena
+  // \\+?: El símbolo + es opcional (0 o 1 vez)
+  // [0-9]{8,15}: Entre 8 y 15 dígitos
+  // $: Fin de la cadena
+  const phoneRegex = /^\+?[0-9]{8,15}$/;
+  return phoneRegex.test(phone.trim());
+};
+
+/**
  * Genera un ID único usando timestamp y número aleatorio
  * @returns String con ID único
  */

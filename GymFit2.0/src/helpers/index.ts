@@ -22,6 +22,7 @@ export {
   isNotEmpty,
   isPositiveNumber,
   passwordsMatch,
+  isValidPhone,
   generateId,
   formatDate
 } from './validation.helpers'

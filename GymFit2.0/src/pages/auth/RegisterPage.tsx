@@ -12,7 +12,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import type { RegisterData } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
 // Importación de helpers de validación
-import { isValidEmail, isValidPassword, passwordsMatch } from '../../helpers';
+import { isValidEmail, isValidPassword, passwordsMatch, isValidPhone } from '../../helpers';
 
 // Componente de página de registro
 // Functional Component: Componente funcional de React
@@ -56,6 +56,7 @@ export const RegisterPage = () => {
     email?: string;
     password?: string;
     confirmPassword?: string;
+    phone?: string;
   }>({});
 
   /**
@@ -111,6 +112,15 @@ export const RegisterPage = () => {
         errors.confirmPassword = 'Las contraseñas no coinciden';
       } else {
         delete errors.confirmPassword;
+      }
+    }
+
+    if (name === 'phone') {
+      // El teléfono es opcional, pero si se ingresa debe tener formato válido
+      if (value.trim() && !isValidPhone(value)) {
+        errors.phone = 'Formato inválido. Debe tener 8-15 dígitos (ejemplo: +56912345678 o 912345678)';
+      } else {
+        delete errors.phone;
       }
     }
 
@@ -175,6 +185,12 @@ export const RegisterPage = () => {
     // Valida que el nombre no esté vacío
     if (!formData.name.trim()) {
       setError('Por favor ingresa tu nombre');
+      return;
+    }
+
+    // Valida el formato del teléfono si está presente
+    if (formData.phone && formData.phone.trim() && !isValidPhone(formData.phone)) {
+      setError('El teléfono debe tener formato válido: 8-15 dígitos (ejemplo: +56912345678 o 912345678)');
       return;
     }
 
@@ -362,10 +378,22 @@ export const RegisterPage = () => {
               <Form.Control
                 type="tel"                      // type: Tipo de input HTML5 (teléfono)
                 name="phone"                    // name: Nombre del campo
-                placeholder="Tu número de teléfono" // placeholder: Texto de ejemplo
+                placeholder="Ej: +56912345678 o 912345678" // placeholder: Texto de ejemplo con formato
                 value={formData.phone}           // value: Valor controlado del input
                 onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                onBlur={(e) => validateField('phone', e.target.value)} // onBlur: Valida al salir del campo
+                isInvalid={!!fieldErrors.phone}  // isInvalid: Marca el campo como inválido
               />
+              {/* Form.Text: Texto de ayuda debajo del campo */}
+              <Form.Text className="text-muted">
+                Formato: 8-15 dígitos. Puede empezar con + (ejemplo: +56912345678 o 912345678)
+              </Form.Text>
+              {/* Form.Control.Feedback: Muestra mensaje de error */}
+              {fieldErrors.phone && (
+                <Form.Control.Feedback type="invalid">
+                  {fieldErrors.phone}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">

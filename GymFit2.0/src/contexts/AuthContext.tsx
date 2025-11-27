@@ -259,10 +259,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       // Intenta registrar con la API del microservicio
       try {
+        // Si el teléfono está vacío o es null, enviar null en lugar de string vacío
+        const phoneValue = data.phone && data.phone.trim() ? data.phone.trim() : null;
+        
         const usuarioBackend = await usuarioAPI.register({
           username: data.name,
           email: data.email,
-          phone: data.phone || '',
+          phone: phoneValue,
           password: data.password,
           rolId: 2 // 2 = Usuario (1 = Admin, 2 = Usuario, 3 = Vendedor/Moderador)
         });
@@ -275,7 +278,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           name: usuarioBackend.username,
           role: UserRole.USER,
           createdAt: new Date().toISOString(),
-          phone: usuarioBackend.phone
+          phone: usuarioBackend.phone || undefined // Convierte null a undefined para el frontend
         };
 
         // Guarda también en localStorage como backup
