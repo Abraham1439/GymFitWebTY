@@ -259,8 +259,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       // Intenta registrar con la API del microservicio
       try {
-        // Si el teléfono está vacío o es null, enviar null en lugar de string vacío
-        const phoneValue = data.phone && data.phone.trim() ? data.phone.trim() : null;
+        // El teléfono es obligatorio, asegurarse de que esté presente
+        const phoneValue = data.phone ? data.phone.trim() : '';
         
         const usuarioBackend = await usuarioAPI.register({
           username: data.name,

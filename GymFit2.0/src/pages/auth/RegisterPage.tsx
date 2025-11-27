@@ -33,7 +33,7 @@ export const RegisterPage = () => {
     confirmPassword: '',          // Confirmación de contraseña (inicialmente vacía)
     name: '',                     // Nombre del nuevo usuario (inicialmente vacío)
     role: UserRole.USER,          // Rol siempre USER: Solo el admin puede asignar otros roles
-    phone: '',                    // Teléfono opcional (inicialmente vacío)
+    phone: '',                    // Teléfono obligatorio (inicialmente vacío)
     address: ''                   // Dirección opcional (inicialmente vacía)
   });
 
@@ -116,8 +116,10 @@ export const RegisterPage = () => {
     }
 
     if (name === 'phone') {
-      // El teléfono es opcional, pero si se ingresa debe tener formato válido
-      if (value.trim() && !isValidPhone(value)) {
+      // El teléfono es obligatorio
+      if (!value.trim()) {
+        errors.phone = 'El teléfono es obligatorio';
+      } else if (!isValidPhone(value)) {
         errors.phone = 'Formato inválido. Debe tener 8-15 dígitos (ejemplo: +56912345678 o 912345678)';
       } else {
         delete errors.phone;
@@ -188,8 +190,12 @@ export const RegisterPage = () => {
       return;
     }
 
-    // Valida el formato del teléfono si está presente
-    if (formData.phone && formData.phone.trim() && !isValidPhone(formData.phone)) {
+    // Valida que el teléfono esté presente y tenga formato válido
+    if (!formData.phone || !formData.phone.trim()) {
+      setError('El teléfono es obligatorio');
+      return;
+    }
+    if (!isValidPhone(formData.phone)) {
       setError('El teléfono debe tener formato válido: 8-15 dígitos (ejemplo: +56912345678 o 912345678)');
       return;
     }
@@ -374,7 +380,7 @@ export const RegisterPage = () => {
             {/* Todos los usuarios se registran como USER por defecto */}
             
             <Form.Group className="mb-3">
-              <Form.Label>Teléfono (Opcional)</Form.Label>
+              <Form.Label>Teléfono</Form.Label>
               <Form.Control
                 type="tel"                      // type: Tipo de input HTML5 (teléfono)
                 name="phone"                    // name: Nombre del campo
@@ -383,6 +389,7 @@ export const RegisterPage = () => {
                 onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
                 onBlur={(e) => validateField('phone', e.target.value)} // onBlur: Valida al salir del campo
                 isInvalid={!!fieldErrors.phone}  // isInvalid: Marca el campo como inválido
+                required                         // required: Atributo HTML5 para validación
               />
               {/* Form.Text: Texto de ayuda debajo del campo */}
               <Form.Text className="text-muted">
