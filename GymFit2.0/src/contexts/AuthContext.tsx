@@ -18,8 +18,6 @@ import {
   generateId
 } from '../helpers';
 
-// Importación del servicio API
-import { usuarioAPI, mapUsuarioToUser } from '../services/api';
 
 // Constantes para las claves de localStorage
 // const: Declaración de constante que no puede ser reasignada
@@ -165,58 +163,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return false;                        // Retorna false si el email no es válido
       }
 
-      // Intenta hacer login con la API del microservicio
-      try {
-        const usuarioBackend = await usuarioAPI.login(data.email, data.password);
-        
-        // Mapea el usuario del backend al formato del frontend
-        const user: User = {
-          id: usuarioBackend.id_usuario.toString(),
-          email: usuarioBackend.email,
-          password: '', // No guardamos la contraseña en el frontend
-          name: usuarioBackend.username,
-          role: usuarioBackend.rolId === 1 ? UserRole.ADMIN : 
-                usuarioBackend.rolId === 2 ? UserRole.USER : UserRole.TRAINER,
-          createdAt: new Date().toISOString(),
-          phone: usuarioBackend.phone
-        };
+      // Busca el usuario en localStorage
+      const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+      const user = users.find(
+        (u) => u.email === data.email && u.password === data.password
+      );
 
-        // Crea los datos de autenticación
-        const newAuthData: AuthData = {
-          user: user,
-          isAuthenticated: true
-        };
-
-        // Actualiza el estado local
-        setAuthData(newAuthData);
-
-        // Guarda la sesión en localStorage
-        saveToLocalStorage(STORAGE_KEY_AUTH, newAuthData);
-
-        // Retorna true indicando login exitoso
-        return true;
-      } catch (apiError: any) {
-        // Si la API falla, intenta con localStorage como fallback
-        console.warn('API no disponible, usando localStorage:', apiError);
-        
-        const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
-        const user = users.find(
-          (u) => u.email === data.email && u.password === data.password
-        );
-
-        if (!user) {
-          return false;
-        }
-
-        const newAuthData: AuthData = {
-          user: user,
-          isAuthenticated: true
-        };
-
-        setAuthData(newAuthData);
-        saveToLocalStorage(STORAGE_KEY_AUTH, newAuthData);
-        return true;
+      if (!user) {
+        return false;
       }
+
+      const newAuthData: AuthData = {
+        user: user,
+        isAuthenticated: true
+      };
+
+      setAuthData(newAuthData);
+      saveToLocalStorage(STORAGE_KEY_AUTH, newAuthData);
+      return true;
     } catch (error) {
       // Manejo de errores: registra el error en consola
       console.error('Error en login:', error);
@@ -257,63 +221,28 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return false;
       }
 
-      // Intenta registrar con la API del microservicio
-      try {
-        // El teléfono es obligatorio, asegurarse de que esté presente
-        const phoneValue = data.phone ? data.phone.trim() : '';
-        
-        const usuarioBackend = await usuarioAPI.register({
-          username: data.name,
-          email: data.email,
-          phone: phoneValue,
-          password: data.password,
-          rolId: 2 // 2 = Usuario (1 = Admin, 2 = Usuario, 3 = Vendedor/Moderador)
-        });
+      // Registra en localStorage
+      const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+      const emailExists = users.some((u) => u.email === data.email);
 
-        // Mapea el usuario del backend al formato del frontend
-        const newUser: User = {
-          id: usuarioBackend.id_usuario.toString(),
-          email: usuarioBackend.email,
-          password: '', // No guardamos la contraseña
-          name: usuarioBackend.username,
-          role: UserRole.USER,
-          createdAt: new Date().toISOString(),
-          phone: usuarioBackend.phone || undefined // Convierte null a undefined para el frontend
-        };
-
-        // Guarda también en localStorage como backup
-        const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
-        users.push(newUser);
-        saveToLocalStorage(STORAGE_KEY_USERS, users);
-
-        // Retorna true indicando registro exitoso
-        return true;
-      } catch (apiError: any) {
-        // Si la API falla, intenta con localStorage como fallback
-        console.warn('API no disponible, usando localStorage:', apiError);
-        
-        const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
-        const emailExists = users.some((u) => u.email === data.email);
-
-        if (emailExists) {
-          return false;
-        }
-
-        const newUser: User = {
-          id: generateId(),
-          email: data.email,
-          password: data.password,
-          name: data.name,
-          role: UserRole.USER,
-          createdAt: new Date().toISOString(),
-          phone: data.phone,
-          address: data.address
-        };
-
-        users.push(newUser);
-        saveToLocalStorage(STORAGE_KEY_USERS, users);
-        return true;
+      if (emailExists) {
+        return false;
       }
+
+      const newUser: User = {
+        id: generateId(),
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        role: UserRole.USER,
+        createdAt: new Date().toISOString(),
+        phone: data.phone,
+        address: data.address
+      };
+
+      users.push(newUser);
+      saveToLocalStorage(STORAGE_KEY_USERS, users);
+      return true;
     } catch (error) {
       // Manejo de errores
       console.error('Error en registro:', error);

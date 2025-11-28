@@ -15,8 +15,6 @@ import { PRODUCT_IMAGES } from '../../mockData';
 import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Product } from '../../interfaces/gym.interfaces';
-// Importación del servicio API
-import { productoAPI, mapProductoToProduct } from '../../services/api';
 
 // Constantes para las claves de localStorage
 const STORAGE_KEY_PRODUCTS = 'gymProducts';    // Clave para almacenar productos
@@ -87,33 +85,7 @@ export const StorePage = () => {
    * void: Tipo que indica que la función no retorna valor
    */
   const loadProducts = async (): Promise<void> => {
-    try {
-      // Intenta cargar productos desde la API del microservicio
-      const productosBackend = await productoAPI.getActivos();
-      
-      if (productosBackend && productosBackend.length > 0) {
-        // Mapea los productos del backend al formato del frontend
-        const productosMapeados = productosBackend.map((producto) => {
-          const product = mapProductoToProduct(producto);
-          // Actualiza la imagen si es necesario
-          return {
-            ...product,
-            image: getProductImageUrl(product.name) || product.image
-          };
-        });
-        
-        // Guarda en localStorage como cache
-        saveToLocalStorage(STORAGE_KEY_PRODUCTS, productosMapeados);
-        // Actualiza el estado
-        setProducts(productosMapeados);
-        return;
-      }
-    } catch (error) {
-      // Si la API falla, usa localStorage como fallback
-      console.warn('API no disponible, usando localStorage:', error);
-    }
-
-    // Fallback: Obtiene los productos guardados en localStorage
+    // Obtiene los productos guardados en localStorage
     const savedProducts = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS);
 
     // Si no hay productos guardados, inicializa con productos de ejemplo

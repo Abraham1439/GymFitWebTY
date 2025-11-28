@@ -242,18 +242,16 @@ Su enfoque combina una sólida base científica (licenciatura en Biología) con 
   /**
    * Confirma la contratación del entrenador
    */
-  const confirmHire = (): void => {
+  const confirmHire = async (): Promise<void> => {
     // Verifica que haya un entrenador seleccionado y usuario autenticado
     if (!selectedTrainer || !authData.user) {
       return;                     // Sale de la función si no hay datos
     }
 
     try {
-      // Obtiene las contrataciones existentes
       const hires = getFromLocalStorage<TrainerHire[]>(STORAGE_KEY_HIRES) || [];
 
       // Verifica si el usuario ya contrató este entrenador
-      // some: Método de array que retorna true si algún elemento cumple la condición
       const alreadyHired = hires.some(
         (h) => h.userId === authData.user!.id && h.trainerId === selectedTrainer.id && h.status === 'active'
       );
@@ -261,35 +259,28 @@ Su enfoque combina una sólida base científica (licenciatura en Biología) con 
       if (alreadyHired) {
         setMessage({ type: 'danger', text: 'Ya tienes contratado a este entrenador' });
         setTimeout(() => setMessage(null), 3000);
-        setShowHireModal(false); // Cierra el modal
+        setShowHireModal(false);
         return;
       }
 
       // Crea una nueva contratación
       const newHire: TrainerHire = {
-        id: generateId(),                    // Genera un ID único
-        userId: authData.user.id,            // ID del usuario que contrata
-        trainerId: selectedTrainer.id,       // ID del entrenador contratado
-        startDate: new Date().toISOString(), // Fecha de inicio (hoy)
-        status: 'active',                     // Estado: activa
-        messages: []                          // Array de mensajes vacío inicialmente
+        id: generateId(),
+        userId: authData.user.id,
+        trainerId: selectedTrainer.id,
+        startDate: new Date().toISOString(),
+        status: 'active',
+        messages: []
       };
 
-      // Agrega la nueva contratación al array
       hires.push(newHire);
-
-      // Guarda las contrataciones actualizadas en localStorage
       saveToLocalStorage(STORAGE_KEY_HIRES, hires);
 
-      // Muestra mensaje de éxito
       setMessage({ type: 'success', text: `¡Has contratado a ${selectedTrainer.name}!` });
       setTimeout(() => setMessage(null), 3000);
 
-      // Cierra el modal
       setShowHireModal(false);
-      // Limpia el entrenador seleccionado
       setSelectedTrainer(null);
-
     } catch (error) {
       // Manejo de errores
       console.error('Error al contratar entrenador:', error);

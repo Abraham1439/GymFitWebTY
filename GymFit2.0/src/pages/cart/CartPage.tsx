@@ -24,8 +24,6 @@ import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Purchase } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
-// Importación del servicio API
-import { ordenAPI, pagoAPI } from '../../services/api';
 
 // Constantes para las claves de localStorage
 const STORAGE_KEY_PURCHASES = 'gymPurchases';
@@ -94,93 +92,46 @@ export const CartPage = () => {
       const userId = parseInt(authData.user.id);
       const total = getTotalPrice();
 
-      // Intenta crear la orden en el microservicio
-      try {
-        // Crea la orden
-        const orden = await ordenAPI.create({
-          usuarioId: userId,
-          total: total,
-          estado: 'PENDIENTE'
-        });
+      // Procesa la compra usando localStorage
+      const purchases = getFromLocalStorage<Purchase[]>(STORAGE_KEY_PURCHASES) || [];
+      const products = getFromLocalStorage<any[]>(STORAGE_KEY_PRODUCTS) || [];
 
-        // Crea el pago
-        const pago = await pagoAPI.create({
-          ordenId: orden.id_orden,
-          usuarioId: userId,
-          monto: total,
-          metodoPago: 'TARJETA',
-          estado: 'COMPLETADO'
-        });
+      const newPurchases: Purchase[] = cartItems.map((item) => ({
+        id: generateId(),
+        userId: authData.user!.id,
+        productId: item.product.id,
+        quantity: item.quantity,
+        total: item.product.price * item.quantity,
+        date: new Date().toISOString(),
+        status: 'completed',
+      }));
 
-        // Guarda también en localStorage como backup
-        const purchases = getFromLocalStorage<Purchase[]>(STORAGE_KEY_PURCHASES) || [];
-        const newPurchases: Purchase[] = cartItems.map((item) => ({
-          id: generateId(),
-          userId: authData.user!.id,
-          productId: item.product.id,
-          quantity: item.quantity,
-          total: item.product.price * item.quantity,
-          date: new Date().toISOString(),
-          status: 'completed',
-        }));
-        purchases.push(...newPurchases);
-        saveToLocalStorage(STORAGE_KEY_PURCHASES, purchases);
+      purchases.push(...newPurchases);
+      saveToLocalStorage(STORAGE_KEY_PURCHASES, purchases);
 
-        // Limpia el carrito
-        clearCart();
+      // Actualiza el stock
+      const updatedProducts = products.map((product) => {
+        const cartItem = cartItems.find((item) => item.product.id === product.id);
+        if (cartItem) {
+          return {
+            ...product,
+            stock: product.stock - cartItem.quantity,
+          };
+        }
+        return product;
+      });
 
-        // Muestra mensaje de éxito
-        setMessage({
-          type: 'success',
-          text: `¡Compra realizada! Se compraron ${getTotalItems()} artículo(s). Orden #${orden.id_orden}`,
-        });
-        setTimeout(() => {
-          setMessage(null);
-          navigate('/user-panel');
-        }, 2000);
-      } catch (apiError: any) {
-        // Si la API falla, usa localStorage como fallback
-        console.warn('API no disponible, usando localStorage:', apiError);
-        
-        const purchases = getFromLocalStorage<Purchase[]>(STORAGE_KEY_PURCHASES) || [];
-        const products = getFromLocalStorage<any[]>(STORAGE_KEY_PRODUCTS) || [];
+      saveToLocalStorage(STORAGE_KEY_PRODUCTS, updatedProducts);
+      clearCart();
 
-        const newPurchases: Purchase[] = cartItems.map((item) => ({
-          id: generateId(),
-          userId: authData.user!.id,
-          productId: item.product.id,
-          quantity: item.quantity,
-          total: item.product.price * item.quantity,
-          date: new Date().toISOString(),
-          status: 'completed',
-        }));
-
-        purchases.push(...newPurchases);
-        saveToLocalStorage(STORAGE_KEY_PURCHASES, purchases);
-
-        const updatedProducts = products.map((product) => {
-          const cartItem = cartItems.find((item) => item.product.id === product.id);
-          if (cartItem) {
-            return {
-              ...product,
-              stock: product.stock - cartItem.quantity,
-            };
-          }
-          return product;
-        });
-
-        saveToLocalStorage(STORAGE_KEY_PRODUCTS, updatedProducts);
-        clearCart();
-
-        setMessage({
-          type: 'success',
-          text: `¡Compra realizada! Se compraron ${getTotalItems()} artículo(s)`,
-        });
-        setTimeout(() => {
-          setMessage(null);
-          navigate('/user-panel');
-        }, 2000);
-      }
+      setMessage({
+        type: 'success',
+        text: `¡Compra realizada! Se compraron ${getTotalItems()} artículo(s)`,
+      });
+      setTimeout(() => {
+        setMessage(null);
+        navigate('/user-panel');
+      }, 2000);
     } catch (error) {
       console.error('Error al realizar compra:', error);
       setMessage({ type: 'danger', text: 'Error al realizar la compra' });
