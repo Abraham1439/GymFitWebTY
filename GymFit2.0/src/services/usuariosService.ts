@@ -43,10 +43,22 @@ export const usuariosService = {
       console.log('[usuariosService] Login response body:', responseText);
 
       if (response.ok) {
-        // El endpoint retorna texto plano "Login exitoso" o JSON
-        return { success: true, message: responseText || 'Login exitoso' };
+        // El endpoint retorna JSON con {message: "Login exitoso"} o texto plano
+        try {
+          const jsonResponse = JSON.parse(responseText);
+          return { success: true, message: jsonResponse.message || jsonResponse.error || 'Login exitoso' };
+        } catch {
+          // Si no es JSON, es texto plano
+          return { success: true, message: responseText || 'Login exitoso' };
+        }
       } else {
-        return { success: false, message: responseText || 'Error al iniciar sesión' };
+        // Manejar errores
+        try {
+          const jsonResponse = JSON.parse(responseText);
+          return { success: false, message: jsonResponse.error || jsonResponse.message || 'Error al iniciar sesión' };
+        } catch {
+          return { success: false, message: responseText || 'Error al iniciar sesión' };
+        }
       }
     } catch (error: any) {
       console.error('[usuariosService] Login error:', error);

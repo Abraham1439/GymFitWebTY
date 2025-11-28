@@ -36,12 +36,21 @@ async function apiCall<T>(
       return {} as T;
     }
 
-    // Parse JSON
+    // Parse JSON - maneja tanto JSON como strings simples
     try {
+      // Si la respuesta parece ser un string simple (no JSON), intenta parsearlo
+      if (responseText.trim().startsWith('"') && responseText.trim().endsWith('"')) {
+        // Es un string JSON, parsearlo
+        return JSON.parse(responseText) as T;
+      } else if (!responseText.trim().startsWith('{') && !responseText.trim().startsWith('[')) {
+        // Es un string plano, retornarlo como objeto con mensaje
+        return { message: responseText } as T;
+      }
       return JSON.parse(responseText) as T;
     } catch (parseError) {
-      console.error('[API] JSON parse error:', parseError, 'Response:', responseText);
-      throw new Error(`Invalid JSON response: ${responseText}`);
+      // Si falla el parse, retornar el texto como mensaje
+      console.warn('[API] JSON parse error, returning as message:', parseError);
+      return { message: responseText } as T;
     }
   } catch (error) {
     console.error('[API] Call failed:', error);
