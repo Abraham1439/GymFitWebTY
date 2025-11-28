@@ -162,8 +162,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       // Valida el formato del email
       if (!isValidEmail(data.email)) {
+        console.error('[AuthContext] Invalid email format:', data.email);
         return false;                        // Retorna false si el email no es válido
       }
+
+      console.log('[AuthContext] Attempting login for:', data.email);
 
       // Intenta hacer login con el microservicio
       const result = await usuariosService.login({
@@ -171,14 +174,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         password: data.password
       });
 
+      console.log('[AuthContext] Login result:', result);
+
       if (!result.success) {
+        console.error('[AuthContext] Login failed:', result.message);
         return false;
       }
+
+      console.log('[AuthContext] Login successful, fetching user data...');
 
       // Si el login es exitoso, obtiene los datos del usuario
       const usuarioAPI = await usuariosService.getUsuarioByEmail(data.email);
       
+      console.log('[AuthContext] User data fetched:', usuarioAPI);
+
       if (!usuarioAPI) {
+        console.error('[AuthContext] User not found after successful login');
         return false;
       }
 
@@ -191,8 +202,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         role: usuarioAPI.rol.nombre === 'Administrador' ? UserRole.ADMIN :
               usuarioAPI.rol.nombre === 'Moderador' ? UserRole.TRAINER : UserRole.USER,
         createdAt: new Date().toISOString(),
-        phone: usuarioAPI.phone
+        phone: usuarioAPI.phone,
+        address: usuarioAPI.address
       };
+
+      console.log('[AuthContext] User converted:', user);
 
       const newAuthData: AuthData = {
         user: user,
@@ -201,10 +215,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       setAuthData(newAuthData);
       saveToLocalStorage(STORAGE_KEY_AUTH, newAuthData);
+      console.log('[AuthContext] Login completed successfully');
       return true;
     } catch (error) {
       // Manejo de errores: registra el error en consola
-      console.error('Error en login:', error);
+      console.error('[AuthContext] Error en login:', error);
       return false;                          // Retorna false en caso de error
     }
   };

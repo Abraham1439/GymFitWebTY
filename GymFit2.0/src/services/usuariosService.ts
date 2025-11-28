@@ -28,15 +28,28 @@ export interface RegisterRequest {
 export const usuariosService = {
   async login(data: LoginRequest): Promise<{ success: boolean; message?: string }> {
     try {
-      const response = await apiCall<{ message?: string }>(
-        `${API_BASE_URLS.usuarios}/login`,
-        {
-          method: 'POST',
-          body: JSON.stringify(data),
-        }
-      );
-      return { success: true, message: response.message || 'Login exitoso' };
+      console.log('[usuariosService] Attempting login for:', data.email);
+      
+      const response = await fetch(`${API_BASE_URLS.usuarios}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const responseText = await response.text();
+      console.log('[usuariosService] Login response status:', response.status);
+      console.log('[usuariosService] Login response body:', responseText);
+
+      if (response.ok) {
+        // El endpoint retorna texto plano "Login exitoso" o JSON
+        return { success: true, message: responseText || 'Login exitoso' };
+      } else {
+        return { success: false, message: responseText || 'Error al iniciar sesión' };
+      }
     } catch (error: any) {
+      console.error('[usuariosService] Login error:', error);
       return { success: false, message: error.message || 'Error al iniciar sesión' };
     }
   },
@@ -61,9 +74,12 @@ export const usuariosService = {
 
   async getUsuarioByEmail(email: string): Promise<Usuario | null> {
     try {
-      return await apiCall<Usuario>(`${API_BASE_URLS.usuarios}/users/email/${encodeURIComponent(email)}`);
+      console.log('[usuariosService] Fetching user by email:', email);
+      const usuario = await apiCall<Usuario>(`${API_BASE_URLS.usuarios}/users/email/${encodeURIComponent(email)}`);
+      console.log('[usuariosService] User found:', usuario);
+      return usuario;
     } catch (error) {
-      console.error('Error fetching usuario:', error);
+      console.error('[usuariosService] Error fetching usuario:', error);
       return null;
     }
   },
