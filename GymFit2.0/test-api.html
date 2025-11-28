@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Usuarios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test API Microservicio Usuarios</h1>
+    
+    <div class="test-section">
+        <h2>1. Verificar que el microservicio esté corriendo</h2>
+        <button onclick="testConnection()">Probar Conexión</button>
+        <pre id="connection-result"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Listar todos los usuarios</h2>
+        <button onclick="getAllUsers()">Obtener Usuarios</button>
+        <pre id="users-result"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Registrar un nuevo usuario</h2>
+        <button onclick="registerUser()">Registrar Usuario de Prueba</button>
+        <pre id="register-result"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Verificar usuario por email</h2>
+        <input type="email" id="email-input" placeholder="email@ejemplo.com" style="padding: 5px; width: 200px;">
+        <button onclick="getUserByEmail()">Buscar por Email</button>
+        <pre id="email-result"></pre>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8081/api/v1/usuario';
+
+        async function testConnection() {
+            const resultEl = document.getElementById('connection-result');
+            try {
+                const response = await fetch(`${API_URL}/users`);
+                resultEl.innerHTML = `<span class="success">✓ Conexión exitosa</span>\nStatus: ${response.status}\nURL: ${API_URL}`;
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">✗ Error de conexión</span>\n${error.message}\n\nAsegúrate de que el microservicio esté corriendo en el puerto 8081`;
+            }
+        }
+
+        async function getAllUsers() {
+            const resultEl = document.getElementById('users-result');
+            try {
+                const response = await fetch(`${API_URL}/users`);
+                const data = await response.json();
+                resultEl.innerHTML = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">Error:</span> ${error.message}`;
+            }
+        }
+
+        async function registerUser() {
+            const resultEl = document.getElementById('register-result');
+            const timestamp = Date.now();
+            const testUser = {
+                username: `testuser_${timestamp}`,
+                password: 'test123',
+                email: `test_${timestamp}@test.com`,
+                phone: `123456${timestamp.toString().slice(-4)}`
+            };
+
+            try {
+                console.log('Enviando:', testUser);
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testUser)
+                });
+
+                const responseText = await response.text();
+                console.log('Respuesta status:', response.status);
+                console.log('Respuesta body:', responseText);
+
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    resultEl.innerHTML = `<span class="success">✓ Usuario registrado exitosamente</span>\nStatus: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultEl.innerHTML = `<span class="error">✗ Error al registrar</span>\nStatus: ${response.status}\n\n${responseText}`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">Error:</span> ${error.message}`;
+            }
+        }
+
+        async function getUserByEmail() {
+            const email = document.getElementById('email-input').value;
+            const resultEl = document.getElementById('email-result');
+            
+            if (!email) {
+                resultEl.innerHTML = '<span class="error">Por favor ingresa un email</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/users/email/${encodeURIComponent(email)}`);
+                const data = await response.json();
+                resultEl.innerHTML = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">Error:</span> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -17,6 +17,8 @@ import {
   passwordsMatch,
   generateId
 } from '../helpers';
+// Importación de servicios API
+import { usuariosService } from '../services/usuariosService';
 
 
 // Constantes para las claves de localStorage
@@ -163,15 +165,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return false;                        // Retorna false si el email no es válido
       }
 
-      // Busca el usuario en localStorage
-      const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
-      const user = users.find(
-        (u) => u.email === data.email && u.password === data.password
-      );
+      // Intenta hacer login con el microservicio
+      const result = await usuariosService.login({
+        email: data.email,
+        password: data.password
+      });
 
-      if (!user) {
+      if (!result.success) {
         return false;
       }
+
+      // Si el login es exitoso, obtiene los datos del usuario
+      const usuarioAPI = await usuariosService.getUsuarioByEmail(data.email);
+      
+      if (!usuarioAPI) {
+        return false;
+      }
+
+      // Convierte el usuario del API al formato del frontend
+      const user: User = {
+        id: usuarioAPI.id.toString(),
+        email: usuarioAPI.email,
+        password: '', // No guardamos la contraseña en el frontend
+        name: usuarioAPI.username,
+        role: usuarioAPI.rol.nombre === 'Administrador' ? UserRole.ADMIN :
+              usuarioAPI.rol.nombre === 'Moderador' ? UserRole.TRAINER : UserRole.USER,
+        createdAt: new Date().toISOString(),
+        phone: usuarioAPI.phone
+      };
 
       const newAuthData: AuthData = {
         user: user,
@@ -221,27 +242,58 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return false;
       }
 
-      // Registra en localStorage
-      const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
-      const emailExists = users.some((u) => u.email === data.email);
-
-      if (emailExists) {
+      // Valida que el teléfono esté presente
+      if (!data.phone || !data.phone.trim()) {
         return false;
       }
 
-      const newUser: User = {
-        id: generateId(),
-        email: data.email,
-        password: data.password,
-        name: data.name,
-        role: UserRole.USER,
-        createdAt: new Date().toISOString(),
+      // Registra en el microservicio (se guarda en la BD)
+      console.log('[AuthContext] Registering user with data:', { 
+        username: data.name, 
+        email: data.email, 
         phone: data.phone,
         address: data.address
+      });
+      
+      const result = await usuariosService.register({
+        username: data.name,
+        password: data.password,
+        email: data.email,
+        phone: data.phone,
+        address: data.address
+      });
+
+      console.log('[AuthContext] Registration result:', result);
+
+      if (!result.success) {
+        console.error('[AuthContext] Registration failed:', result.message);
+        return false;
+      }
+
+      if (!result.usuario) {
+        console.error('[AuthContext] No usuario returned from service');
+        return false;
+      }
+
+      console.log('[AuthContext] User registered successfully:', result.usuario);
+
+      // Convierte el usuario del API al formato del frontend para mantener compatibilidad
+      const newUser: User = {
+        id: result.usuario.id.toString(),
+        email: result.usuario.email,
+        password: '', // No guardamos la contraseña en el frontend
+        name: result.usuario.username,
+        role: UserRole.USER, // Siempre USER para registros públicos
+        createdAt: new Date().toISOString(),
+        phone: result.usuario.phone,
+        address: result.usuario.address || data.address
       };
 
+      // Guarda en localStorage solo para mantener compatibilidad con el resto de la app
+      const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
       users.push(newUser);
       saveToLocalStorage(STORAGE_KEY_USERS, users);
+      
       return true;
     } catch (error) {
       // Manejo de errores

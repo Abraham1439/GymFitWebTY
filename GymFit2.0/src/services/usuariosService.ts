@@ -9,7 +9,7 @@ export interface Usuario {
     id: number;
     nombre: string;
   };
-  photoUrl?: string;
+  address?: string;
 }
 
 export interface LoginRequest {
@@ -22,6 +22,7 @@ export interface RegisterRequest {
   password: string;
   email: string;
   phone: string;
+  address?: string;
 }
 
 export const usuariosService = {
@@ -42,6 +43,7 @@ export const usuariosService = {
 
   async register(data: RegisterRequest): Promise<{ success: boolean; usuario?: Usuario; message?: string }> {
     try {
+      console.log('[usuariosService] Registering:', data);
       const usuario = await apiCall<Usuario>(
         `${API_BASE_URLS.usuarios}/register`,
         {
@@ -49,8 +51,10 @@ export const usuariosService = {
           body: JSON.stringify(data),
         }
       );
+      console.log('[usuariosService] Registration successful:', usuario);
       return { success: true, usuario };
     } catch (error: any) {
+      console.error('[usuariosService] Registration error:', error);
       return { success: false, message: error.message || 'Error al registrar usuario' };
     }
   },

@@ -13,6 +13,8 @@ async function apiCall<T>(
   options: RequestInit = {}
 ): Promise<T> {
   try {
+    console.log(`[API] ${options.method || 'GET'} ${url}`, options.body ? JSON.parse(options.body as string) : '');
+    
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -21,21 +23,28 @@ async function apiCall<T>(
       },
     });
 
+    // Read response text ONCE
+    const responseText = await response.text();
+    console.log(`[API] Response ${response.status}:`, responseText);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API Error: ${response.status} - ${errorText}`);
+      throw new Error(`API Error: ${response.status} - ${responseText}`);
     }
 
     // Handle empty responses
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      const text = await response.text();
-      return text ? JSON.parse(text) : ({} as T);
+    if (!responseText || responseText.trim() === '') {
+      return {} as T;
     }
 
-    return {} as T;
+    // Parse JSON
+    try {
+      return JSON.parse(responseText) as T;
+    } catch (parseError) {
+      console.error('[API] JSON parse error:', parseError, 'Response:', responseText);
+      throw new Error(`Invalid JSON response: ${responseText}`);
+    }
   } catch (error) {
-    console.error('API call failed:', error);
+    console.error('[API] Call failed:', error);
     throw error;
   }
 }
