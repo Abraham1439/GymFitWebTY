@@ -42,8 +42,8 @@ export const AdminPanel = () => {
   // Estado para el modal de creación de producto
   const [showCreateProductModal, setShowCreateProductModal] = useState<boolean>(false); // false = modal cerrado
 
-  // Estado para el modal de edición de stock
-  const [showEditStockModal, setShowEditStockModal] = useState<boolean>(false); // false = modal cerrado
+  // Estado para el modal de edición de producto
+  const [showEditProductModal, setShowEditProductModal] = useState<boolean>(false); // false = modal cerrado
 
   // Estado para el modal de eliminación de producto
   const [showDeleteProductModal, setShowDeleteProductModal] = useState<boolean>(false); // false = modal cerrado
@@ -67,8 +67,15 @@ export const AdminPanel = () => {
     image: 'https://via.placeholder.com/150x150?text=Producto'
   }); // Objeto con valores iniciales
 
-  // Estado para el stock a editar
-  const [stockValue, setStockValue] = useState<number>(0); // Número inicialmente 0
+  // Estado para los datos del formulario de edición de producto
+  const [editProductFormData, setEditProductFormData] = useState<Partial<Product>>({
+    name: '',
+    description: '',
+    price: 0,
+    stock: 0,
+    category: 'accessory',
+    image: ''
+  }); // Objeto con valores iniciales
 
   // Estado para mensajes de éxito/error
   const [message, setMessage] = useState<{ type: 'success' | 'danger'; text: string } | null>(null); // null = sin mensaje
@@ -412,58 +419,97 @@ export const AdminPanel = () => {
   };
 
   /**
-   * Abre el modal para editar el stock de un producto
-   * @param product - Producto a editar stock
+   * Abre el modal para editar un producto
+   * @param product - Producto a editar
    */
-  const handleEditStockClick = (product: Product): void => {
+  const handleEditProductClick = (product: Product): void => {
     // Establece el producto seleccionado
     setSelectedProduct(product);
-    // Inicializa el valor del stock con el stock actual
-    setStockValue(product.stock);
+    // Inicializa el formulario con los datos del producto
+    setEditProductFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      stock: product.stock,
+      category: product.category,
+      image: product.image || ''
+    });
     // Abre el modal
-    setShowEditStockModal(true);
+    setShowEditProductModal(true);
   };
 
   /**
-   * Guarda el stock editado en el microservicio
+   * Maneja los cambios en el formulario de edición de producto
+   * @param e - Evento de cambio del input
    */
-  const saveStock = async (): Promise<void> => {
-    // Verifica que haya un producto seleccionado y un valor de stock válido
-    if (!selectedProduct || stockValue < 0) {
-      setMessage({ type: 'danger', text: 'Por favor ingresa un stock válido (mayor o igual a 0)' });
+  const handleEditProductFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>): void => {
+    // Obtiene el nombre y valor del campo que cambió
+    const { name, value } = e.target;
+    
+    // Actualiza el estado del formulario con el nuevo valor
+    setEditProductFormData((prev) => ({
+      ...prev,                    // Spread operator: Copia todas las propiedades anteriores
+      [name]: name === 'price' || name === 'stock' ? parseFloat(value) || 0 : value // Convierte a número si es price o stock
+    }));
+  };
+
+  /**
+   * Actualiza un producto en el microservicio
+   */
+  const updateProduct = async (): Promise<void> => {
+    // Verifica que haya un producto seleccionado
+    if (!selectedProduct) {
+      return;
+    }
+
+    // Valida que todos los campos requeridos estén completos
+    if (!editProductFormData.name || !editProductFormData.description || !editProductFormData.price || editProductFormData.stock === undefined) {
+      setMessage({ type: 'danger', text: 'Por favor completa todos los campos requeridos' });
       setTimeout(() => setMessage(null), 3000);
       return;
     }
 
     try {
-      // Actualiza el stock en el microservicio
+      // Actualiza el producto en el microservicio
       const productoId = parseInt(selectedProduct.id);
-      const diferenciaStock = stockValue - selectedProduct.stock; // Diferencia entre el nuevo stock y el actual
-      
-      const productoActualizado = await productosService.updateStock(productoId, diferenciaStock);
+      const productoActualizado = await productosService.update(productoId, {
+        nombre: editProductFormData.name!,
+        descripcion: editProductFormData.description!,
+        precio: editProductFormData.price!,
+        categoria: editProductFormData.category!,
+        imagen: editProductFormData.image || undefined,
+        stock: editProductFormData.stock!
+      });
 
       if (!productoActualizado) {
-        throw new Error('No se pudo actualizar el stock');
+        throw new Error('No se pudo actualizar el producto');
       }
 
       // Recarga los productos desde el microservicio para actualizar la lista
       await loadProducts();
 
       // Muestra mensaje de éxito
-      setMessage({ type: 'success', text: 'Stock actualizado correctamente' });
+      setMessage({ type: 'success', text: 'Producto actualizado correctamente' });
       setTimeout(() => setMessage(null), 3000);
 
       // Cierra el modal
-      setShowEditStockModal(false);
+      setShowEditProductModal(false);
       // Limpia el producto seleccionado
       setSelectedProduct(null);
-      // Limpia el valor del stock
-      setStockValue(0);
+      // Limpia el formulario
+      setEditProductFormData({
+        name: '',
+        description: '',
+        price: 0,
+        stock: 0,
+        category: 'accessory',
+        image: ''
+      });
 
     } catch (error) {
       // Manejo de errores
-      console.error('Error al actualizar stock:', error);
-      setMessage({ type: 'danger', text: 'Error al actualizar el stock. Verifica que el microservicio esté disponible.' });
+      console.error('Error al actualizar producto:', error);
+      setMessage({ type: 'danger', text: 'Error al actualizar el producto. Verifica que el microservicio esté disponible.' });
       setTimeout(() => setMessage(null), 3000);
     }
   };
@@ -727,14 +773,14 @@ export const AdminPanel = () => {
                           </Badge>
                         </td>
                         <td>
-                          {/* Button: Botón para editar stock */}
+                          {/* Button: Botón para editar producto */}
                           <Button
                             variant="warning"
                             size="sm"
                             className="me-2"
-                            onClick={() => handleEditStockClick(product)}
+                            onClick={() => handleEditProductClick(product)}
                           >
-                            Editar Stock
+                            Editar Producto
                           </Button>
                           {/* Button: Botón para eliminar producto */}
                           <Button
@@ -862,49 +908,100 @@ export const AdminPanel = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal: Componente de Bootstrap para mostrar diálogos - Editar Stock */}
-      <Modal show={showEditStockModal} onHide={() => setShowEditStockModal(false)}>
+      {/* Modal: Componente de Bootstrap para mostrar diálogos - Editar Producto */}
+      <Modal show={showEditProductModal} onHide={() => setShowEditProductModal(false)}>
         {/* Modal.Header: Encabezado del modal */}
         <Modal.Header closeButton>
-          <Modal.Title>Editar Stock</Modal.Title>
+          <Modal.Title>Editar Producto</Modal.Title>
         </Modal.Header>
         
         {/* Modal.Body: Cuerpo del modal */}
         <Modal.Body>
-          {selectedProduct && (
-            <>
-              {/* Información del producto */}
-              <p>
-                Producto: <strong>{selectedProduct.name}</strong>
-              </p>
-              <p>
-                Stock actual: <strong>{selectedProduct.stock}</strong>
-              </p>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control
+                type="text"
+                name="name"
+                value={editProductFormData.name || ''}
+                onChange={handleEditProductFormChange}
+                placeholder="Ej: Proteína Whey"
+                required
+              />
+            </Form.Group>
 
-              {/* Form.Group: Componente de Bootstrap para agrupar elementos del formulario */}
-              <Form.Group className="mt-3">
-                <Form.Label>Nuevo Stock</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={stockValue}
-                  onChange={(e) => setStockValue(parseInt(e.target.value) || 0)}
-                  min="0"
-                  required
-                />
-              </Form.Group>
-            </>
-          )}
+            <Form.Group className="mb-3">
+              <Form.Label>Descripción</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="description"
+                value={editProductFormData.description || ''}
+                onChange={handleEditProductFormChange}
+                placeholder="Descripción del producto"
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Precio</Form.Label>
+              <Form.Control
+                type="number"
+                name="price"
+                value={editProductFormData.price || 0}
+                onChange={handleEditProductFormChange}
+                min="0"
+                step="0.01"
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Stock</Form.Label>
+              <Form.Control
+                type="number"
+                name="stock"
+                value={editProductFormData.stock || 0}
+                onChange={handleEditProductFormChange}
+                min="0"
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Categoría</Form.Label>
+              <Form.Select
+                name="category"
+                value={editProductFormData.category || 'accessory'}
+                onChange={handleEditProductFormChange}
+              >
+                <option value="accessory">Accesorio</option>
+                <option value="supplement">Suplemento</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>URL de Imagen</Form.Label>
+              <Form.Control
+                type="text"
+                name="image"
+                value={editProductFormData.image || ''}
+                onChange={handleEditProductFormChange}
+                placeholder="https://ejemplo.com/imagen.jpg"
+              />
+            </Form.Group>
+          </Form>
         </Modal.Body>
         
         {/* Modal.Footer: Pie del modal */}
         <Modal.Footer>
           {/* Button: Botón para cancelar */}
-          <Button variant="secondary" onClick={() => setShowEditStockModal(false)}>
+          <Button variant="secondary" onClick={() => setShowEditProductModal(false)}>
             Cancelar
           </Button>
           {/* Button: Botón para guardar */}
-          <Button variant="primary" onClick={saveStock}>
-            Guardar Stock
+          <Button variant="primary" onClick={updateProduct}>
+            Guardar Cambios
           </Button>
         </Modal.Footer>
       </Modal>
