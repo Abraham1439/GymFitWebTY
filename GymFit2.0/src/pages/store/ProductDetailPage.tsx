@@ -17,14 +17,11 @@ import {
 
 // Importación de hooks y helpers
 import { useCart } from '../../contexts/CartContext';
-import { getFromLocalStorage } from '../../helpers';
+import { productosService } from '../../services/productosService';
 // Importación de constantes de colores
 import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Product } from '../../interfaces/gym.interfaces';
-
-// Constante para la clave de localStorage
-const STORAGE_KEY_PRODUCTS = 'gymProducts';
 
 // Componente de página de detalles de producto
 export const ProductDetailPage = () => {
@@ -65,31 +62,47 @@ export const ProductDetailPage = () => {
   }, [id]); // Se ejecuta cada vez que el parámetro 'id' cambia
 
   /**
-   * Carga un producto específico desde localStorage
+   * Carga un producto específico desde el microservicio
    * @param productId - ID del producto a cargar
    */
-  const loadProduct = (productId: string): void => {
+  const loadProduct = async (productId: string): Promise<void> => {
     setLoading(true);
     
-    // Simula un pequeño delay para mostrar la pantalla de carga
-    setTimeout(() => {
-      // Obtiene todos los productos desde localStorage
-      const products = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
+    try {
+      // Obtiene el producto desde el microservicio
+      const producto = await productosService.getById(parseInt(productId));
       
-      // Busca el producto por ID
-      const foundProduct = products.find((p) => p.id === productId);
-      
-      if (foundProduct) {
-        setProduct(foundProduct);
-      } else {
+      if (!producto) {
         setMessage({
           type: 'danger',
           text: 'Producto no encontrado',
         });
+        setLoading(false);
+        return;
       }
       
+      // Convierte el producto del API al formato del frontend
+      const foundProduct: Product = {
+        id: producto.id.toString(),
+        name: producto.nombre,
+        description: producto.descripcion,
+        price: producto.precio,
+        category: producto.categoria,
+        image: producto.imagen || '',
+        stock: producto.stock,
+        createdAt: new Date().toISOString()
+      };
+      
+      setProduct(foundProduct);
       setLoading(false);
-    }, 800); // 800ms de delay para mostrar la pantalla de carga
+    } catch (error) {
+      console.error('Error loading product:', error);
+      setMessage({
+        type: 'danger',
+        text: 'Error al cargar el producto',
+      });
+      setLoading(false);
+    }
   };
 
   /**

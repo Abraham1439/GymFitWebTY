@@ -7,6 +7,8 @@ import { Container, Row, Col, Card, Table, Badge, Button, Modal, Form, Alert } f
 // Importación de hooks y helpers
 import { useAuth } from '../../contexts/AuthContext';
 import { getFromLocalStorage, saveToLocalStorage, generateId, formatDate } from '../../helpers';
+import { ordenesService, ItemOrden } from '../../services/ordenesService';
+import { productosService } from '../../services/productosService';
 // Importación de tipos e interfaces
 import type { Purchase, TrainerHire, Product, Trainer, Message } from '../../interfaces/gym.interfaces';
 
@@ -60,19 +62,69 @@ export const UserPanel = () => {
    * Carga los datos del usuario (compras y contrataciones)
    * void: Tipo que indica que la función no retorna valor
    */
-  const loadUserData = (): void => {
+  const loadUserData = async (): Promise<void> => {
     // Verifica que el usuario esté autenticado
     if (!authData.user) {
       return;                     // Sale de la función si no hay usuario
     }
 
-    // Obtiene todas las compras desde localStorage
-    const allPurchases = getFromLocalStorage<Purchase[]>(STORAGE_KEY_PURCHASES) || [];
-    // Filtra solo las compras del usuario actual
-    // filter: Método de array que retorna elementos que cumplen una condición
-    const userPurchases = allPurchases.filter((p) => p.userId === authData.user!.id);
-    // Actualiza el estado con las compras del usuario
-    setPurchases(userPurchases);
+    try {
+      const userId = parseInt(authData.user.id);
+      
+      // Carga las órdenes del usuario desde el microservicio
+      const ordenes = await ordenesService.getByUsuario(userId);
+      
+      // Convierte las órdenes a formato Purchase
+      const purchasesList: Purchase[] = [];
+      
+      for (const orden of ordenes) {
+        // Obtiene los items de cada orden
+        const items = await ordenesService.getItemsByOrden(orden.id);
+        
+        // Convierte cada item a una Purchase
+        for (const item of items) {
+          // Convierte el estado de la orden al formato del frontend
+          // El backend usa: "pendiente", "completada", "cancelada" (minúsculas)
+          let status: 'pending' | 'completed' | 'cancelled' = 'pending';
+          const estadoLower = orden.estado.toLowerCase();
+          if (estadoLower === 'completada' || estadoLower === 'completado') {
+            status = 'completed';
+          } else if (estadoLower === 'cancelada' || estadoLower === 'cancelado') {
+            status = 'cancelled';
+          } else {
+            status = 'pending';
+          }
+          
+          purchasesList.push({
+            id: `orden-${orden.id}-item-${item.id}`,
+            userId: authData.user.id,
+            productId: item.productoId.toString(),
+            quantity: item.cantidad,
+            total: item.subtotal,
+            date: orden.fechaCreacion,
+            status: status
+          });
+        }
+      }
+      
+      // Actualiza el estado con las compras del usuario
+      setPurchases(purchasesList);
+      
+      // Carga productos para mostrar detalles
+      const productos = await productosService.getAll();
+      const productosFormateados: Product[] = productos.map(p => ({
+        id: p.id.toString(),
+        name: p.nombre,
+        description: p.descripcion,
+        price: p.precio,
+        category: p.categoria,
+        image: p.imagen || '',
+        stock: p.stock
+      }));
+      setProducts(productosFormateados);
+    } catch (error) {
+      console.error('Error al cargar datos del usuario:', error);
+    }
 
     // Obtiene todas las contrataciones desde localStorage
     const allHires = getFromLocalStorage<TrainerHire[]>(STORAGE_KEY_HIRES) || [];
@@ -80,10 +132,6 @@ export const UserPanel = () => {
     const userHires = allHires.filter((h) => h.userId === authData.user!.id);
     // Actualiza el estado con las contrataciones del usuario
     setHires(userHires);
-
-    // Carga productos para mostrar detalles
-    const allProducts = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
-    setProducts(allProducts);
 
     // Carga entrenadores para mostrar detalles
     const allTrainers = getFromLocalStorage<Trainer[]>(STORAGE_KEY_TRAINERS) || [];

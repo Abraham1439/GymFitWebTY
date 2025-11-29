@@ -4,37 +4,23 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 // Importación de interfaces y tipos
-import type { User, AuthData, LoginData, RegisterData, Trainer, Product } from '../interfaces/gym.interfaces';
+import type { User, AuthData, LoginData, RegisterData } from '../interfaces/gym.interfaces';
 import { UserRole } from '../interfaces/gym.interfaces';
 
-// Importación de helpers para localStorage y validaciones
+// Importación de helpers para validaciones
 import {
-  saveToLocalStorage,
-  getFromLocalStorage,
-  removeFromLocalStorage,
   isValidEmail,
   isValidPassword,
-  passwordsMatch,
-  generateId
+  passwordsMatch
 } from '../helpers';
 // Importación de servicios API
 import { usuariosService } from '../services/usuariosService';
-
-
-// Constantes para las claves de localStorage
-// const: Declaración de constante que no puede ser reasignada
-const STORAGE_KEY_USERS = 'gymUsers';        // Clave para almacenar usuarios en localStorage
-const STORAGE_KEY_AUTH = 'gymAuth';          // Clave para almacenar sesión autenticada
-const STORAGE_KEY_PRODUCTS = 'gymProducts';  // Clave para almacenar productos
-const STORAGE_KEY_TRAINERS = 'gymTrainers';  // Clave para almacenar entrenadores
-const STORAGE_KEY_PURCHASES = 'gymPurchases'; // Clave para almacenar compras
-const STORAGE_KEY_HIRES = 'gymHires';        // Clave para almacenar contrataciones
 
 // Interfaz que define la forma del contexto de autenticación
 // Interface: Define el contrato del objeto de contexto
 interface AuthContextType {
   authData: AuthData;                        // Datos de autenticación actuales
-  login: (data: LoginData) => Promise<boolean>; // Función para iniciar sesión
+  login: (data: LoginData) => Promise<User | null>; // Función para iniciar sesión, retorna el usuario o null
   register: (data: RegisterData) => Promise<boolean>; // Función para registrar usuario
   logout: () => void;                        // Función para cerrar sesión
   initializeData: () => void;               // Función para inicializar datos por primera vez
@@ -62,108 +48,54 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   });
 
   // useEffect: Hook de React que ejecuta efectos secundarios
-  // Efecto que se ejecuta al montar el componente para cargar la sesión guardada
-  // Restaura la sesión del usuario si había una sesión activa guardada en localStorage
-  // Si no hay sesión, inicializa los datos por primera vez (crea usuarios por defecto)
+  // Efecto que se ejecuta al montar el componente para restaurar la sesión
   useEffect(() => {
-    // Carga el usuario autenticado desde localStorage si existe
-    const savedAuth = getFromLocalStorage<AuthData>(STORAGE_KEY_AUTH);
-    if (savedAuth && savedAuth.user) {
-      // setState: Actualiza el estado del componente con la sesión guardada
-      setAuthData(savedAuth);
-    } else {
-      // Si no hay sesión guardada, inicializa los datos por primera vez
-      initializeData();
+    // Verificar si hay un token JWT guardado
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+      // Si hay token, intentar obtener los datos del usuario
+      // Por ahora, solo verificamos que el token existe
+      // En producción, deberías validar el token con el backend
+      const savedUser = localStorage.getItem('user_data');
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          setAuthData({
+            user: user,
+            isAuthenticated: true
+          });
+        } catch (error) {
+          console.error('Error parsing saved user data:', error);
+          // Si hay error, limpiar datos inválidos
+          localStorage.removeItem('jwt_token');
+          localStorage.removeItem('user_data');
+        }
+      }
     }
   }, []); // Array de dependencias vacío: se ejecuta solo al montar el componente
 
   /**
-   * Función para inicializar datos por primera vez (usuarios, productos, entrenadores)
+   * Función para inicializar datos por primera vez
+   * Ya no es necesaria porque los datos vienen de los microservicios
    * void: Tipo que indica que la función no retorna valor
    */
   const initializeData = (): void => {
-    // Verifica si ya existen usuarios en localStorage
-    const existingUsers = getFromLocalStorage<User[]>(STORAGE_KEY_USERS);
-    
-    // Si no existen usuarios, crea los datos iniciales
-    if (!existingUsers || existingUsers.length === 0) {
-      // Crea un usuario administrador por defecto
-      const adminUser: User = {
-        id: generateId(),                    // Genera un ID único
-        email: 'admin@gym.com',              // Email del administrador
-        password: 'admin123',                // Contraseña del administrador (en producción debería estar hasheada)
-        name: 'Administrador',              // Nombre del administrador
-        role: UserRole.ADMIN,                // Rol de administrador
-        createdAt: new Date().toISOString()  // Fecha de creación en formato ISO
-      };
-
-      // Crea un usuario entrenador predeterminado
-      const trainerUserId = generateId();    // ID único para el usuario entrenador
-      const trainerUser: User = {
-        id: trainerUserId,                   // ID del usuario entrenador
-        email: 'trainer@gym.com',            // Email del entrenador
-        password: 'trainer123',              // Contraseña del entrenador
-        name: 'Carlos Entrenador',           // Nombre del entrenador
-        role: UserRole.TRAINER,              // Rol de entrenador
-        createdAt: new Date().toISOString()  // Fecha de creación en formato ISO
-      };
-
-      // Crea un usuario normal de ejemplo
-      const normalUser: User = {
-        id: generateId(),                    // Genera un ID único
-        email: 'user@gym.com',               // Email del usuario normal
-        password: 'user123',                 // Contraseña del usuario normal
-        name: 'Usuario Ejemplo',             // Nombre del usuario normal
-        role: UserRole.USER,                 // Rol de usuario normal
-        createdAt: new Date().toISOString()  // Fecha de creación en formato ISO
-      };
-
-      // Guarda todos los usuarios predeterminados en localStorage
-      saveToLocalStorage(STORAGE_KEY_USERS, [adminUser, trainerUser, normalUser]);
-
-      // Crea el perfil de entrenador para el usuario entrenador
-      const trainerProfile: Trainer = {
-        id: generateId(),                    // ID único del perfil de entrenador
-        userId: trainerUserId,               // ID del usuario entrenador
-        name: 'Carlos Entrenador',           // Nombre del entrenador
-        specialization: 'Fuerza y Potencia', // Especialización
-        experience: 5,                        // Años de experiencia
-        price: 50,                            // Precio por hora
-        description: 'Especialista en entrenamiento de fuerza y levantamiento de pesas', // Descripción
-        rating: 4.8,                         // Calificación promedio
-        image: 'https://via.placeholder.com/300x300?text=Carlos', // URL de imagen placeholder
-        available: true                       // Disponible
-      };
-
-      // Guarda el perfil de entrenador en localStorage
-      saveToLocalStorage(STORAGE_KEY_TRAINERS, [trainerProfile]);
-
-      // Inicializa productos vacíos (se crearán en StorePage si no existen)
-      const existingProducts = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS);
-      if (!existingProducts || existingProducts.length === 0) {
-        saveToLocalStorage(STORAGE_KEY_PRODUCTS, []);
-      }
-
-      // Inicializa compras vacías
-      saveToLocalStorage(STORAGE_KEY_PURCHASES, []);
-
-      // Inicializa contrataciones vacías
-      saveToLocalStorage(STORAGE_KEY_HIRES, []);
-    }
+    // Ya no se inicializan datos aquí, todo viene de los microservicios
+    // Esta función se mantiene por compatibilidad pero no hace nada
   };
 
   /**
    * Función para iniciar sesión
    * @param data - Datos de login (email y contraseña)
-   * @returns Promise que resuelve a true si el login es exitoso, false si no
+   * @returns Promise que resuelve al usuario si el login es exitoso, null si no
    * Promise: Objeto que representa una operación asíncrona
    */
-  const login = async (data: LoginData): Promise<boolean> => {
+  const login = async (data: LoginData): Promise<User | null> => {
     try {
       // Valida el formato del email
       if (!isValidEmail(data.email)) {
         console.error('[AuthContext] Invalid email format:', data.email);
-        return false;                        // Retorna false si el email no es válido
+        return null;                        // Retorna null si el email no es válido
       }
 
       console.log('[AuthContext] Attempting login for:', data.email);
@@ -178,7 +110,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (!result.success) {
         console.error('[AuthContext] Login failed:', result.message);
-        return false;
+        return null;
       }
 
       console.log('[AuthContext] Login successful, fetching user data...');
@@ -190,7 +122,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (!usuarioAPI) {
         console.error('[AuthContext] User not found after successful login');
-        return false;
+        return null;
       }
 
       // Convierte el usuario del API al formato del frontend
@@ -200,7 +132,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         password: '', // No guardamos la contraseña en el frontend
         name: usuarioAPI.username,
         role: usuarioAPI.rol.nombre === 'Administrador' ? UserRole.ADMIN :
-              usuarioAPI.rol.nombre === 'Moderador' ? UserRole.TRAINER : UserRole.USER,
+              usuarioAPI.rol.nombre === 'Entrenador' ? UserRole.TRAINER : UserRole.USER,
         createdAt: new Date().toISOString(),
         phone: usuarioAPI.phone,
         address: usuarioAPI.address
@@ -214,13 +146,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       };
 
       setAuthData(newAuthData);
-      saveToLocalStorage(STORAGE_KEY_AUTH, newAuthData);
+      
+      // Guardar datos del usuario en localStorage para persistencia
+      localStorage.setItem('user_data', JSON.stringify(user));
+      
       console.log('[AuthContext] Login completed successfully');
-      return true;
+      return user;                           // Retorna el usuario para que LoginPage pueda redirigir según el rol
     } catch (error) {
       // Manejo de errores: registra el error en consola
       console.error('[AuthContext] Error en login:', error);
-      return false;                          // Retorna false en caso de error
+      return null;                           // Retorna null en caso de error
     }
   };
 
@@ -292,22 +227,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       console.log('[AuthContext] User registered successfully:', result.usuario);
 
-      // Convierte el usuario del API al formato del frontend para mantener compatibilidad
-      const newUser: User = {
-        id: result.usuario.id.toString(),
-        email: result.usuario.email,
-        password: '', // No guardamos la contraseña en el frontend
-        name: result.usuario.username,
-        role: UserRole.USER, // Siempre USER para registros públicos
-        createdAt: new Date().toISOString(),
-        phone: result.usuario.phone,
-        address: result.usuario.address || data.address
-      };
-
-      // Guarda en localStorage solo para mantener compatibilidad con el resto de la app
-      const users = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
-      users.push(newUser);
-      saveToLocalStorage(STORAGE_KEY_USERS, users);
+      // El usuario ya está guardado en la BD del microservicio
+      // No se guarda en localStorage para evitar IDs duplicados
+      // Los datos se obtienen directamente del microservicio cuando se necesiten
       
       return true;
     } catch (error) {
@@ -326,9 +248,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       user: null,                            // Usuario a null
       isAuthenticated: false                  // Estado de autenticación a false
     });
-
-    // Elimina la sesión de localStorage
-    removeFromLocalStorage(STORAGE_KEY_AUTH);
+    // Limpiar token JWT y datos del usuario del localStorage
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('user_data');
   };
 
   // Valor del contexto que se compartirá con los componentes hijos

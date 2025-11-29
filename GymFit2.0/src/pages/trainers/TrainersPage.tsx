@@ -60,9 +60,9 @@ export const TrainersPage = () => {
     // Obtiene los entrenadores guardados en localStorage
     const savedTrainers = getFromLocalStorage<Trainer[]>(STORAGE_KEY_TRAINERS);
 
-    // Si no hay entrenadores guardados, inicializa con entrenadores de ejemplo
-    if (!savedTrainers || savedTrainers.length === 0) {
-      // Array de entrenadores de ejemplo
+    // Si no hay entrenadores guardados o hay menos de 3, inicializa con entrenadores de ejemplo
+    if (!savedTrainers || savedTrainers.length < 3) {
+      // Array de entrenadores de ejemplo (mínimo 3)
       const initialTrainers: Trainer[] = [
         // Entrenador 1
         {

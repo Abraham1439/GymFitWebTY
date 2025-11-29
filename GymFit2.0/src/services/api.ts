@@ -15,12 +15,21 @@ async function apiCall<T>(
   try {
     console.log(`[API] ${options.method || 'GET'} ${url}`, options.body ? JSON.parse(options.body as string) : '');
     
+    // Obtener token JWT del localStorage si existe
+    const token = localStorage.getItem('jwt_token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+    
+    // Agregar token JWT al header si existe
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(url, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
     });
 
     // Read response text ONCE

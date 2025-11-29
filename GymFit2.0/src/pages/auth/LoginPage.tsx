@@ -12,6 +12,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { LoginData } from '../../interfaces/gym.interfaces';
+import { UserRole } from '../../interfaces/gym.interfaces';
 // Importación de helpers de validación
 import { isValidEmail } from '../../helpers';
 
@@ -24,7 +25,7 @@ export const LoginPage = () => {
   
   // useAuth: Hook personalizado que retorna las funciones y datos de autenticación
   // Se utiliza para ejecutar la función de login que valida las credenciales del usuario
-  const { login } = useAuth();
+  const { login, authData } = useAuth();
 
   // useState: Hook de React para gestionar estado local
   // Estado para los datos del formulario de login
@@ -133,11 +134,17 @@ export const LoginPage = () => {
     try {
       // Intenta hacer login con los datos del formulario
       // await: Palabra clave para esperar una promesa
-      const success = await login(formData);
+      const user = await login(formData);
 
-      if (success) {
-        // Si el login es exitoso, navega a la página principal
-        navigate('/');
+      if (user) {
+        // Si el login es exitoso, redirige según el rol del usuario
+        if (user.role === UserRole.ADMIN) {
+          navigate('/admin');
+        } else if (user.role === UserRole.TRAINER) {
+          navigate('/trainer-panel');
+        } else {
+          navigate('/user-panel');
+        }
       } else {
         // Si el login falla, muestra un mensaje de error
         setError('Email o contraseña incorrectos');

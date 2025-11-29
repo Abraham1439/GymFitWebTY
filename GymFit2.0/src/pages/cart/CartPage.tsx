@@ -18,16 +18,14 @@ import { useNavigate } from 'react-router-dom';
 // Importación de hooks y helpers
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
-import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
+import { ordenesService } from '../../services/ordenesService';
+import { pagosService } from '../../services/pagosService';
+import { productosService } from '../../services/productosService';
+import { carritoService } from '../../services/carritoService';
 // Importación de constantes de colores
 import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
-import type { Purchase } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
-
-// Constantes para las claves de localStorage
-const STORAGE_KEY_PURCHASES = 'gymPurchases';
-const STORAGE_KEY_PRODUCTS = 'gymProducts';
 
 // Componente de página del carrito
 export const CartPage = () => {
@@ -92,37 +90,53 @@ export const CartPage = () => {
       const userId = parseInt(authData.user.id);
       const total = getTotalPrice();
 
-      // Procesa la compra usando localStorage
-      const purchases = getFromLocalStorage<Purchase[]>(STORAGE_KEY_PURCHASES) || [];
-      const products = getFromLocalStorage<any[]>(STORAGE_KEY_PRODUCTS) || [];
-
-      const newPurchases: Purchase[] = cartItems.map((item) => ({
-        id: generateId(),
-        userId: authData.user!.id,
-        productId: item.product.id,
-        quantity: item.quantity,
-        total: item.product.price * item.quantity,
-        date: new Date().toISOString(),
-        status: 'completed',
+      // Convierte los items del carrito al formato del microservicio de Ordenes
+      const items = cartItems.map((item) => ({
+        productoId: parseInt(item.product.id),
+        cantidad: item.quantity,
+        precioUnitario: item.product.price
       }));
 
-      purchases.push(...newPurchases);
-      saveToLocalStorage(STORAGE_KEY_PURCHASES, purchases);
-
-      // Actualiza el stock
-      const updatedProducts = products.map((product) => {
-        const cartItem = cartItems.find((item) => item.product.id === product.id);
-        if (cartItem) {
-          return {
-            ...product,
-            stock: product.stock - cartItem.quantity,
-          };
-        }
-        return product;
+      // Crea la orden en el microservicio de Ordenes
+      const orden = await ordenesService.create({
+        usuarioId: userId,
+        total: total,
+        direccionEnvio: authData.user.address || '',
+        notas: '',
+        items: items
       });
 
-      saveToLocalStorage(STORAGE_KEY_PRODUCTS, updatedProducts);
-      clearCart();
+      if (!orden) {
+        throw new Error('Error al crear la orden');
+      }
+
+      // Crea el pago asociado a la orden
+      const pago = await pagosService.create({
+        ordenId: orden.id,
+        usuarioId: userId,
+        monto: total,
+        metodoPago: 'Tarjeta de crédito',
+        informacionAdicional: 'Pago realizado desde el carrito'
+      });
+
+      if (!pago) {
+        console.warn('Advertencia: No se pudo crear el pago, pero la orden fue creada');
+      } else {
+        // Actualiza el estado de la orden a "COMPLETADA" cuando el pago se crea exitosamente
+        await ordenesService.updateEstado(orden.id, 'completada');
+      }
+
+      // Actualiza el stock de cada producto (resta la cantidad vendida)
+      for (const item of cartItems) {
+        const productoId = parseInt(item.product.id);
+        const cantidadVendida = item.quantity;
+        
+        // El backend suma la cantidad al stock, así que enviamos un valor negativo para restar
+        await productosService.updateStock(productoId, -cantidadVendida);
+      }
+
+      // Vacía el carrito después de crear la orden
+      await clearCart();
 
       setMessage({
         type: 'success',

@@ -5,19 +5,18 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 // Importación de interfaces y tipos
 import type { CartItem, Product } from '../interfaces/gym.interfaces';
 
-// Importación de helpers para localStorage
-import { saveToLocalStorage, getFromLocalStorage } from '../helpers';
-
-// Constante para la clave de localStorage
-const STORAGE_KEY_CART = 'gymCart';
+// Importación de servicios API
+import { carritoService, ItemCarrito } from '../services/carritoService';
+import { productosService } from '../services/productosService';
+import { useAuth } from './AuthContext';
 
 // Interfaz que define la forma del contexto del carrito
 interface CartContextType {
   cartItems: CartItem[];                    // Array de artículos en el carrito
-  addToCart: (product: Product, quantity?: number) => void; // Función para agregar producto al carrito
-  removeFromCart: (productId: string) => void; // Función para eliminar producto del carrito
-  updateQuantity: (productId: string, quantity: number) => void; // Función para actualizar cantidad
-  clearCart: () => void;                     // Función para vaciar el carrito
+  addToCart: (product: Product, quantity?: number) => Promise<void>; // Función para agregar producto al carrito
+  removeFromCart: (productId: string) => Promise<void>; // Función para eliminar producto del carrito
+  updateQuantity: (productId: string, quantity: number) => Promise<void>; // Función para actualizar cantidad
+  clearCart: () => Promise<void>;                     // Función para vaciar el carrito
   getTotalItems: () => number;              // Función para obtener el total de artículos
   getTotalPrice: () => number;              // Función para obtener el precio total
 }
@@ -35,56 +34,156 @@ export const CartProvider = ({ children }: CartProviderProps) => {
   // useState: Hook de React para gestionar estado local
   // Estado global que almacena todos los productos agregados al carrito de compras
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  // Mapa para almacenar los IDs de los items del carrito (itemId -> CartItem)
+  const [cartItemIds, setCartItemIds] = useState<Map<string, number>>(new Map());
+  const { authData } = useAuth();
 
   // useEffect: Hook de React que ejecuta efectos secundarios
-  // Carga el carrito guardado desde localStorage al montar el componente (al iniciar la aplicación)
-  // Esto permite que el carrito persista entre recargas de página
+  // Carga el carrito desde el microservicio al montar el componente
   useEffect(() => {
-    const savedCart = getFromLocalStorage<CartItem[]>(STORAGE_KEY_CART);
-    if (savedCart) {
-      setCartItems(savedCart);
-    }
-  }, []); // Array de dependencias vacío: se ejecuta solo al montar el componente
-
-  // useEffect: Hook de React que ejecuta efectos secundarios
-  // Guarda automáticamente el carrito en localStorage cada vez que cambia
-  // Esto asegura que los cambios en el carrito se persistan inmediatamente
-  useEffect(() => {
-    saveToLocalStorage(STORAGE_KEY_CART, cartItems);
-  }, [cartItems]); // Se ejecuta cada vez que cartItems cambia
+    const loadCart = async () => {
+      if (authData.isAuthenticated && authData.user) {
+        try {
+          const usuarioId = parseInt(authData.user.id);
+          const items = await carritoService.getCarritoByUsuario(usuarioId);
+          
+          // Cargar productos para obtener información completa
+          const productos = await productosService.getAll();
+          
+          // Convertir items del API al formato del frontend
+          const convertedItems: CartItem[] = [];
+          const itemIdsMap = new Map<string, number>();
+          
+          for (const item of items) {
+            const producto = productos.find(p => p.id === item.productoId);
+            if (producto) {
+              convertedItems.push({
+                product: {
+                  id: producto.id.toString(),
+                  name: producto.nombre,
+                  price: producto.precio,
+                  description: producto.descripcion,
+                  category: producto.categoria,
+                  image: producto.imagen || '',
+                  stock: producto.stock
+                },
+                quantity: item.cantidad
+              });
+              // Guardar el itemId del carrito para poder actualizarlo después
+              itemIdsMap.set(producto.id.toString(), item.id);
+            }
+          }
+          
+          setCartItems(convertedItems);
+          setCartItemIds(itemIdsMap);
+        } catch (error) {
+          console.error('Error loading cart from API:', error);
+        }
+      }
+    };
+    loadCart();
+  }, [authData.isAuthenticated, authData.user]); // Se ejecuta cuando cambia la autenticación
 
   /**
    * Agrega un producto al carrito
    * @param product - Producto a agregar
    * @param quantity - Cantidad a agregar (por defecto 1)
    */
-  const addToCart = (product: Product, quantity: number = 1): void => {
-    setCartItems((prevItems) => {
+  const addToCart = async (product: Product, quantity: number = 1): Promise<void> => {
+    if (!authData.isAuthenticated || !authData.user) {
+      console.error('User must be authenticated to add items to cart');
+      return;
+    }
+
+    try {
+      const usuarioId = parseInt(authData.user.id);
+      const productoId = parseInt(product.id);
+      
       // Busca si el producto ya está en el carrito
-      const existingItem = prevItems.find((item) => item.product.id === product.id);
+      const existingItem = cartItems.find((item) => item.product.id === product.id);
 
       if (existingItem) {
-        // Si ya existe, actualiza la cantidad
-        return prevItems.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+        // Si ya existe, actualiza la cantidad en la BD
+        const newQuantity = existingItem.quantity + quantity;
+        const itemId = cartItemIds.get(product.id);
+        
+        if (itemId) {
+          // Actualiza en la BD usando el itemId del carrito
+          await carritoService.updateQuantity(itemId, newQuantity);
+        } else {
+          // Si no tiene itemId, agrega como nuevo item
+          const newItem = await carritoService.addItem({
+            usuarioId,
+            productoId,
+            cantidad: quantity,
+            precioUnitario: product.price
+          });
+          if (newItem) {
+            setCartItemIds(prev => new Map(prev).set(product.id, newItem.id));
+          }
+        }
+        
+        // Actualiza el estado local
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.product.id === product.id
+              ? { ...item, quantity: newQuantity }
+              : item
+          )
         );
       } else {
-        // Si no existe, agrega el nuevo artículo
-        return [...prevItems, { product, quantity }];
+        // Si no existe, agrega el nuevo artículo al microservicio
+        const newItem = await carritoService.addItem({
+          usuarioId,
+          productoId,
+          cantidad: quantity,
+          precioUnitario: product.price
+        });
+        
+        if (newItem) {
+          // Guarda el itemId para futuras actualizaciones
+          setCartItemIds(prev => new Map(prev).set(product.id, newItem.id));
+          
+          // Actualiza el estado local
+          setCartItems((prevItems) => [...prevItems, { product, quantity }]);
+        }
       }
-    });
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+    }
   };
 
   /**
    * Elimina un producto del carrito
    * @param productId - ID del producto a eliminar
    */
-  const removeFromCart = (productId: string): void => {
-    setCartItems((prevItems) =>
-      prevItems.filter((item) => item.product.id !== productId)
-    );
+  const removeFromCart = async (productId: string): Promise<void> => {
+    if (!authData.isAuthenticated || !authData.user) {
+      console.error('User must be authenticated to remove items from cart');
+      return;
+    }
+
+    try {
+      const usuarioId = parseInt(authData.user.id);
+      const productoIdNum = parseInt(productId);
+      
+      // Elimina del microservicio
+      await carritoService.deleteItemByProducto(usuarioId, productoIdNum);
+      
+      // Actualiza el estado local
+      setCartItems((prevItems) =>
+        prevItems.filter((item) => item.product.id !== productId)
+      );
+      
+      // Elimina el itemId del mapa
+      setCartItemIds(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(productId);
+        return newMap;
+      });
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
   };
 
   /**
@@ -92,24 +191,57 @@ export const CartProvider = ({ children }: CartProviderProps) => {
    * @param productId - ID del producto
    * @param quantity - Nueva cantidad (si es 0 o menos, se elimina)
    */
-  const updateQuantity = (productId: string, quantity: number): void => {
+  const updateQuantity = async (productId: string, quantity: number): Promise<void> => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      await removeFromCart(productId);
       return;
     }
 
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+    if (!authData.isAuthenticated || !authData.user) {
+      console.error('User must be authenticated to update cart');
+      return;
+    }
+
+    try {
+      // Buscar el item en el carrito para obtener su ID
+      const cartItem = cartItems.find(item => item.product.id === productId);
+      if (cartItem) {
+        const itemId = cartItemIds.get(productId);
+        
+        if (itemId) {
+          // Actualiza en la BD usando el itemId del carrito
+          await carritoService.updateQuantity(itemId, quantity);
+        }
+        
+        // Actualiza el estado local
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.product.id === productId ? { ...item, quantity } : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating cart quantity:', error);
+    }
   };
 
   /**
    * Vacía el carrito completamente
    */
-  const clearCart = (): void => {
-    setCartItems([]);
+  const clearCart = async (): Promise<void> => {
+    if (!authData.isAuthenticated || !authData.user) {
+      console.error('User must be authenticated to clear cart');
+      return;
+    }
+
+    try {
+      const usuarioId = parseInt(authData.user.id);
+      await carritoService.vaciarCarrito(usuarioId);
+      setCartItems([]);
+      setCartItemIds(new Map()); // Limpia también el mapa de IDs
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+    }
   };
 
   /**

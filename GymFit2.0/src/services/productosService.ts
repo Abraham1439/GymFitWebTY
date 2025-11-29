@@ -82,5 +82,17 @@ export const productosService = {
       return false;
     }
   },
+
+  async updateStock(id: number, cantidad: number): Promise<Producto | null> {
+    try {
+      return await apiCall<Producto>(`${API_BASE_URLS.productos}/${id}/stock`, {
+        method: 'PUT',
+        body: JSON.stringify({ cantidad }),
+      });
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      return null;
+    }
+  },
 };
 

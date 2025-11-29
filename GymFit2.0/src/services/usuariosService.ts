@@ -26,7 +26,7 @@ export interface RegisterRequest {
 }
 
 export const usuariosService = {
-  async login(data: LoginRequest): Promise<{ success: boolean; message?: string }> {
+  async login(data: LoginRequest): Promise<{ success: boolean; token?: string; message?: string }> {
     try {
       console.log('[usuariosService] Attempting login for:', data.email);
       
@@ -43,16 +43,23 @@ export const usuariosService = {
       console.log('[usuariosService] Login response body:', responseText);
 
       if (response.ok) {
-        // El endpoint retorna JSON con {message: "Login exitoso"} o texto plano
         try {
           const jsonResponse = JSON.parse(responseText);
-          return { success: true, message: jsonResponse.message || jsonResponse.error || 'Login exitoso' };
+          // El endpoint ahora retorna {token, message, usuario}
+          if (jsonResponse.token) {
+            // Guardar token en localStorage
+            localStorage.setItem('jwt_token', jsonResponse.token);
+            return { 
+              success: true, 
+              token: jsonResponse.token,
+              message: jsonResponse.message || 'Login exitoso' 
+            };
+          }
+          return { success: true, message: jsonResponse.message || 'Login exitoso' };
         } catch {
-          // Si no es JSON, es texto plano
           return { success: true, message: responseText || 'Login exitoso' };
         }
       } else {
-        // Manejar errores
         try {
           const jsonResponse = JSON.parse(responseText);
           return { success: false, message: jsonResponse.error || jsonResponse.message || 'Error al iniciar sesión' };

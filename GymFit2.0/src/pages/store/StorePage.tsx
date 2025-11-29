@@ -8,7 +8,7 @@ import { Container, Row, Col, Card, Button, Badge, Alert, Form, InputGroup } fro
 
 // Importación de hooks y helpers
 import { useCart } from '../../contexts/CartContext';
-import { getFromLocalStorage, saveToLocalStorage, generateId } from '../../helpers';
+import { productosService } from '../../services/productosService';
 // Importación de URLs de imágenes
 import { PRODUCT_IMAGES } from '../../mockData';
 // Importación de constantes de colores
@@ -16,8 +16,7 @@ import { COLORS } from '../../constants';
 // Importación de tipos e interfaces
 import type { Product } from '../../interfaces/gym.interfaces';
 
-// Constantes para las claves de localStorage
-const STORAGE_KEY_PRODUCTS = 'gymProducts';    // Clave para almacenar productos
+// Ya no se usa localStorage, los productos vienen del microservicio
 
 // Componente de página de tienda
 // Functional Component: Componente funcional de React
@@ -81,109 +80,31 @@ export const StorePage = () => {
   };
 
   /**
-   * Carga los productos desde la API o localStorage como fallback
+   * Carga los productos desde el microservicio de Productos
    * void: Tipo que indica que la función no retorna valor
    */
   const loadProducts = async (): Promise<void> => {
-    // Obtiene los productos guardados en localStorage
-    const savedProducts = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS);
-
-    // Si no hay productos guardados, inicializa con productos de ejemplo
-    if (!savedProducts || savedProducts.length === 0) {
-      // Array de productos de ejemplo
-      const initialProducts: Product[] = [
-        // Producto 1: Accesorio
-        {
-          id: generateId(),                    // Genera un ID único
-          name: 'Cinturón de Pesas',           // Nombre del producto
-          description: 'Cinturón de cuero resistente para levantamiento de pesas', // Descripción
-          price: 29.99,                        // Precio en dólares
-          category: 'accessory',               // Categoría: accesorio
-          image: PRODUCT_IMAGES.CINTURON,      // URL de imagen desde mockData
-          stock: 15,                          // Stock disponible
-          createdAt: new Date().toISOString()  // Fecha de creación
-        },
-        // Producto 2: Accesorio
-        {
-          id: generateId(),
-          name: 'Guantes de Gimnasio',
-          description: 'Guantes acolchados para protección de manos',
-          price: 19.99,
-          category: 'accessory',
-          image: PRODUCT_IMAGES.GUANTES,       // URL de imagen desde mockData
-          stock: 25,
-          createdAt: new Date().toISOString()
-        },
-        // Producto 3: Suplemento
-        {
-          id: generateId(),
-          name: 'Proteína Whey',
-          description: 'Proteína de suero de leche para recuperación muscular',
-          price: 49.99,
-          category: 'supplement',
-          image: PRODUCT_IMAGES.PROTEINA,      // URL de imagen desde mockData
-          stock: 10,
-          createdAt: new Date().toISOString()
-        },
-        // Producto 4: Suplemento
-        {
-          id: generateId(),
-          name: 'Creatina Monohidratada',
-          description: 'Creatina pura para aumentar fuerza y masa muscular',
-          price: 24.99,
-          category: 'supplement',
-          image: PRODUCT_IMAGES.CREATINA,      // URL de imagen desde mockData
-          stock: 18,
-          createdAt: new Date().toISOString()
-        },
-        // Producto 5: Accesorio
-        {
-          id: generateId(),
-          name: 'Bandas de Resistencia',
-          description: 'Set de bandas elásticas de diferentes resistencias',
-          price: 15.99,
-          category: 'accessory',
-          image: PRODUCT_IMAGES.BANDAS,        // URL de imagen desde mockData
-          stock: 30,
-          createdAt: new Date().toISOString()
-        },
-        // Producto 6: Suplemento
-        {
-          id: generateId(),
-          name: 'BCAA en Polvo',
-          description: 'Aminoácidos de cadena ramificada para recuperación',
-          price: 34.99,
-          category: 'supplement',
-          image: PRODUCT_IMAGES.BCAA,          // URL de imagen desde mockData
-          stock: 12,
-          createdAt: new Date().toISOString()
-        }
-      ];
-
-      // Guarda los productos iniciales en localStorage
-      saveToLocalStorage(STORAGE_KEY_PRODUCTS, initialProducts);
-      // Actualiza el estado con los productos iniciales
-      setProducts(initialProducts);
-    } else {
-      // Si ya hay productos, actualiza las imágenes si tienen URLs de placeholder
-      const updatedProducts = savedProducts.map((product) => {
-        // Si la imagen es un placeholder o no coincide con las nuevas URLs, actualízala
-        const isPlaceholder = product.image.includes('placeholder.com') || 
-                             product.image.includes('via.placeholder');
-        
-        if (isPlaceholder) {
-          return {
-            ...product,
-            image: getProductImageUrl(product.name)
-          };
-        }
-        return product;
-      });
+    try {
+      // Carga los productos desde el microservicio
+      const productos = await productosService.getAll();
       
-      // Guarda los productos actualizados en localStorage
-      saveToLocalStorage(STORAGE_KEY_PRODUCTS, updatedProducts);
-      // Actualiza el estado con los productos actualizados
-      setProducts(updatedProducts);
+      // Convierte los productos del API al formato del frontend
+      const convertedProducts: Product[] = productos.map(producto => ({
+        id: producto.id.toString(),
+        name: producto.nombre,
+        description: producto.descripcion,
+        price: producto.precio,
+        category: producto.categoria,
+        image: producto.imagen || getProductImageUrl(producto.nombre),
+        stock: producto.stock,
+        createdAt: new Date().toISOString()
+      }));
+      
+      // Actualiza el estado con los productos del microservicio
+      setProducts(convertedProducts);
+    } catch (error) {
+      console.error('Error loading products from API:', error);
+      setProducts([]);
     }
   };
 
