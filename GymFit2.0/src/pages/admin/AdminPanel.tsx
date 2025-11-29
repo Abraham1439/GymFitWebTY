@@ -7,6 +7,8 @@ import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Badge } f
 // Importación de hooks y helpers
 import { useAuth } from '../../contexts/AuthContext';
 import { getFromLocalStorage, saveToLocalStorage, formatDate, generateId } from '../../helpers';
+// Importación de servicios API
+import { productosService } from '../../services/productosService';
 // Importación de tipos e interfaces
 import type { User, Trainer, Product } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
@@ -14,7 +16,7 @@ import { UserRole } from '../../interfaces/gym.interfaces';
 // Constantes para las claves de localStorage
 const STORAGE_KEY_USERS = 'gymUsers';          // Clave para almacenar usuarios
 const STORAGE_KEY_TRAINERS = 'gymTrainers';    // Clave para almacenar entrenadores
-const STORAGE_KEY_PRODUCTS = 'gymProducts';    // Clave para almacenar productos
+// NOTA: Los productos ahora se guardan en el microservicio de Productos, no en localStorage
 
 // Componente de panel de administrador
 // Functional Component: Componente funcional de React
@@ -77,7 +79,7 @@ export const AdminPanel = () => {
   useEffect(() => {
     // Carga los usuarios desde localStorage
     loadUsers();
-    // Carga los productos desde localStorage
+    // Carga los productos desde el microservicio
     loadProducts();
   }, []); // Array de dependencias vacío: se ejecuta solo al montar
 
@@ -93,14 +95,31 @@ export const AdminPanel = () => {
   };
 
   /**
-   * Carga todos los productos desde localStorage
-   * void: Tipo que indica que la función no retorna valor
+   * Carga todos los productos desde el microservicio de Productos
    */
-  const loadProducts = (): void => {
-    // Obtiene todos los productos guardados en localStorage
-    const savedProducts = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
-    // Actualiza el estado con los productos
-    setProducts(savedProducts);
+  const loadProducts = async (): Promise<void> => {
+    try {
+      // Carga los productos desde el microservicio
+      const productos = await productosService.getAll();
+      
+      // Convierte los productos del API al formato del frontend
+      const convertedProducts: Product[] = productos.map(producto => ({
+        id: producto.id.toString(),
+        name: producto.nombre,
+        description: producto.descripcion,
+        price: producto.precio,
+        category: producto.categoria as 'accessory' | 'supplement',
+        image: producto.imagen || 'https://via.placeholder.com/150x150?text=Producto',
+        stock: producto.stock,
+        createdAt: new Date().toISOString()
+      }));
+      
+      // Actualiza el estado con los productos del microservicio
+      setProducts(convertedProducts);
+    } catch (error) {
+      console.error('Error loading products from API:', error);
+      setProducts([]);
+    }
   };
 
   /**
@@ -340,9 +359,9 @@ export const AdminPanel = () => {
   };
 
   /**
-   * Guarda el nuevo producto
+   * Guarda el nuevo producto en el microservicio de Productos
    */
-  const saveProduct = (): void => {
+  const saveProduct = async (): Promise<void> => {
     // Valida que todos los campos requeridos estén completos
     if (!productFormData.name || !productFormData.description || !productFormData.price || productFormData.stock === undefined) {
       setMessage({ type: 'danger', text: 'Por favor completa todos los campos requeridos' });
@@ -351,29 +370,22 @@ export const AdminPanel = () => {
     }
 
     try {
-      // Obtiene todos los productos
-      const allProducts = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
+      // Crea el producto en el microservicio
+      const nuevoProducto = await productosService.create({
+        nombre: productFormData.name!,
+        descripcion: productFormData.description!,
+        precio: productFormData.price!,
+        categoria: productFormData.category!,
+        imagen: productFormData.image || undefined,
+        stock: productFormData.stock!
+      });
 
-      // Crea el nuevo producto
-      const newProduct: Product = {
-        id: generateId(),                    // Genera un ID único
-        name: productFormData.name!,         // Nombre del producto (non-null assertion: !)
-        description: productFormData.description!, // Descripción del producto
-        price: productFormData.price!,       // Precio del producto
-        stock: productFormData.stock!,       // Stock del producto
-        category: productFormData.category as 'accessory' | 'supplement', // Categoría del producto
-        image: productFormData.image || 'https://via.placeholder.com/150x150?text=Producto', // Imagen del producto
-        createdAt: new Date().toISOString()  // Fecha de creación en formato ISO
-      };
+      if (!nuevoProducto) {
+        throw new Error('No se pudo crear el producto');
+      }
 
-      // Agrega el nuevo producto al array
-      allProducts.push(newProduct);
-
-      // Guarda los productos actualizados en localStorage
-      saveToLocalStorage(STORAGE_KEY_PRODUCTS, allProducts);
-
-      // Actualiza el estado local
-      setProducts(allProducts);
+      // Recarga los productos desde el microservicio para actualizar la lista
+      await loadProducts();
 
       // Muestra mensaje de éxito
       setMessage({ type: 'success', text: 'Producto creado correctamente' });
@@ -394,7 +406,7 @@ export const AdminPanel = () => {
     } catch (error) {
       // Manejo de errores
       console.error('Error al crear producto:', error);
-      setMessage({ type: 'danger', text: 'Error al crear el producto' });
+      setMessage({ type: 'danger', text: 'Error al crear el producto. Verifica que el microservicio esté disponible.' });
       setTimeout(() => setMessage(null), 3000);
     }
   };
@@ -413,9 +425,9 @@ export const AdminPanel = () => {
   };
 
   /**
-   * Guarda el stock editado
+   * Guarda el stock editado en el microservicio
    */
-  const saveStock = (): void => {
+  const saveStock = async (): Promise<void> => {
     // Verifica que haya un producto seleccionado y un valor de stock válido
     if (!selectedProduct || stockValue < 0) {
       setMessage({ type: 'danger', text: 'Por favor ingresa un stock válido (mayor o igual a 0)' });
@@ -424,27 +436,18 @@ export const AdminPanel = () => {
     }
 
     try {
-      // Obtiene todos los productos
-      const allProducts = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
+      // Actualiza el stock en el microservicio
+      const productoId = parseInt(selectedProduct.id);
+      const diferenciaStock = stockValue - selectedProduct.stock; // Diferencia entre el nuevo stock y el actual
+      
+      const productoActualizado = await productosService.updateStock(productoId, diferenciaStock);
 
-      // Actualiza el stock del producto seleccionado
-      // map: Método de array que crea un nuevo array transformando cada elemento
-      const updatedProducts = allProducts.map((p) => {
-        if (p.id === selectedProduct.id) {
-          // Si es el producto seleccionado, actualiza su stock
-          return {
-            ...p,                              // Spread operator: copia todas las propiedades
-            stock: stockValue                   // Actualiza el stock
-          };
-        }
-        return p;                              // Retorna el producto sin cambios
-      });
+      if (!productoActualizado) {
+        throw new Error('No se pudo actualizar el stock');
+      }
 
-      // Guarda los productos actualizados en localStorage
-      saveToLocalStorage(STORAGE_KEY_PRODUCTS, updatedProducts);
-
-      // Actualiza el estado local
-      setProducts(updatedProducts);
+      // Recarga los productos desde el microservicio para actualizar la lista
+      await loadProducts();
 
       // Muestra mensaje de éxito
       setMessage({ type: 'success', text: 'Stock actualizado correctamente' });
@@ -460,7 +463,7 @@ export const AdminPanel = () => {
     } catch (error) {
       // Manejo de errores
       console.error('Error al actualizar stock:', error);
-      setMessage({ type: 'danger', text: 'Error al actualizar el stock' });
+      setMessage({ type: 'danger', text: 'Error al actualizar el stock. Verifica que el microservicio esté disponible.' });
       setTimeout(() => setMessage(null), 3000);
     }
   };
@@ -477,27 +480,25 @@ export const AdminPanel = () => {
   };
 
   /**
-   * Elimina un producto
+   * Elimina un producto del microservicio
    */
-  const confirmDeleteProduct = (): void => {
+  const confirmDeleteProduct = async (): Promise<void> => {
     // Verifica que haya un producto seleccionado
     if (!selectedProduct) {
       return;                     // Sale de la función si no hay producto
     }
 
     try {
-      // Obtiene todos los productos
-      const allProducts = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
+      // Elimina el producto del microservicio
+      const productoId = parseInt(selectedProduct.id);
+      const eliminado = await productosService.delete(productoId);
 
-      // Filtra el producto eliminado
-      // filter: Método de array que retorna elementos que cumplen una condición
-      const updatedProducts = allProducts.filter((p) => p.id !== selectedProduct.id);
+      if (!eliminado) {
+        throw new Error('No se pudo eliminar el producto');
+      }
 
-      // Guarda los productos actualizados en localStorage
-      saveToLocalStorage(STORAGE_KEY_PRODUCTS, updatedProducts);
-
-      // Actualiza el estado local
-      setProducts(updatedProducts);
+      // Recarga los productos desde el microservicio para actualizar la lista
+      await loadProducts();
 
       // Muestra mensaje de éxito
       setMessage({ type: 'success', text: 'Producto eliminado correctamente' });
