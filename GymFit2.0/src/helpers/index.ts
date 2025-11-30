@@ -23,6 +23,7 @@ export {
   isPositiveNumber,
   passwordsMatch,
   isValidPhone,
+  isValidName,
   generateId,
   formatDate
 } from './validation.helpers'

@@ -12,7 +12,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import type { RegisterData } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
 // Importación de helpers de validación
-import { isValidEmail, isValidPassword, passwordsMatch, isValidPhone } from '../../helpers';
+import { isValidEmail, isValidPassword, passwordsMatch, isValidPhone, isValidName } from '../../helpers';
 
 // Componente de página de registro
 // Functional Component: Componente funcional de React
@@ -34,7 +34,7 @@ export const RegisterPage = () => {
     name: '',                     // Nombre del nuevo usuario (inicialmente vacío)
     role: UserRole.USER,          // Rol siempre USER: Solo el admin puede asignar otros roles
     phone: '',                    // Teléfono obligatorio (inicialmente vacío)
-    address: ''                   // Dirección opcional (inicialmente vacía)
+    address: ''                   // Dirección obligatoria (inicialmente vacía)
   });
 
   // Estado para mensajes de error
@@ -70,6 +70,8 @@ export const RegisterPage = () => {
     if (name === 'name') {
       if (!value.trim()) {
         errors.name = 'El nombre es requerido';
+      } else if (!isValidName(value)) {
+        errors.name = 'El nombre solo puede contener letras y espacios';
       } else if (value.trim().length < 2) {
         errors.name = 'El nombre debe tener al menos 2 caracteres';
       } else {
@@ -123,6 +125,15 @@ export const RegisterPage = () => {
         errors.phone = 'Formato inválido. Debe empezar con + seguido de 11 dígitos (ejemplo: +56912345678)';
       } else {
         delete errors.phone;
+      }
+    }
+
+    if (name === 'address') {
+      // La dirección es obligatoria
+      if (!value.trim()) {
+        errors.address = 'La dirección es obligatoria';
+      } else {
+        delete errors.address;
       }
     }
 
@@ -184,9 +195,13 @@ export const RegisterPage = () => {
       return;
     }
 
-    // Valida que el nombre no esté vacío
+    // Valida que el nombre no esté vacío y tenga formato válido
     if (!formData.name.trim()) {
       setError('Por favor ingresa tu nombre');
+      return;
+    }
+    if (!isValidName(formData.name)) {
+      setError('El nombre solo puede contener letras y espacios');
       return;
     }
 
@@ -197,6 +212,12 @@ export const RegisterPage = () => {
     }
     if (!isValidPhone(formData.phone)) {
       setError('El teléfono debe tener formato válido: debe empezar con + seguido de 11 dígitos (ejemplo: +56912345678)');
+      return;
+    }
+
+    // Valida que la dirección esté presente
+    if (!formData.address || !formData.address.trim()) {
+      setError('La dirección es obligatoria');
       return;
     }
 
@@ -224,7 +245,7 @@ export const RegisterPage = () => {
         }, 1500);
       } else {
         // Si el registro falla, muestra un mensaje de error
-        setError('Error al registrar. El email puede estar en uso.');
+        setError('El correo ya esta en uso.');
       }
     } catch (err) {
       // Manejo de errores: si ocurre un error inesperado
@@ -404,14 +425,23 @@ export const RegisterPage = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Dirección (Opcional)</Form.Label>
+              <Form.Label>Dirección</Form.Label>
               <Form.Control
                 type="text"                     // type: Tipo de input HTML5 (texto)
                 name="address"                  // name: Nombre del campo
                 placeholder="Tu dirección"      // placeholder: Texto de ejemplo
                 value={formData.address}         // value: Valor controlado del input
                 onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
+                onBlur={(e) => validateField('address', e.target.value)} // onBlur: Valida al salir del campo
+                isInvalid={!!fieldErrors.address}  // isInvalid: Marca el campo como inválido
+                required                         // required: Atributo HTML5 para validación
               />
+              {/* Form.Control.Feedback: Muestra mensaje de error */}
+              {fieldErrors.address && (
+                <Form.Control.Feedback type="invalid">
+                  {fieldErrors.address}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             {/* Button: Componente de Bootstrap para botones */}

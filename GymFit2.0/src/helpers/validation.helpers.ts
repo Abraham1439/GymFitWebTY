@@ -44,6 +44,25 @@ export const isNotEmpty = (value: string): boolean => {
 };
 
 /**
+ * Valida si un nombre contiene solo letras y espacios
+ * @param name - Nombre a validar (string)
+ * @returns true si el nombre contiene solo letras y espacios, false si contiene números u otros caracteres
+ */
+export const isValidName = (name: string): boolean => {
+  // El nombre es obligatorio, no puede estar vacío
+  if (!name || name.trim().length === 0) {
+    return false;
+  }
+  // Validar formato: Solo letras (incluyendo acentos y ñ) y espacios
+  // ^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$: Patrón regex que valida formato de nombre
+  // ^: Inicio de la cadena
+  // [a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+: Uno o más caracteres que sean letras (incluyendo acentos, ñ, ü) o espacios
+  // $: Fin de la cadena
+  const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+  return nameRegex.test(name.trim());
+};
+
+/**
  * Valida si un número es positivo
  * @param value - Número a validar (number)
  * @returns true si el número es positivo, false si no

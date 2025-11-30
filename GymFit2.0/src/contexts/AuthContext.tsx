@@ -11,7 +11,8 @@ import { UserRole } from '../interfaces/gym.interfaces';
 import {
   isValidEmail,
   isValidPassword,
-  passwordsMatch
+  passwordsMatch,
+  isValidName
 } from '../helpers';
 // Importación de servicios API
 import { usuariosService } from '../services/usuariosService';
@@ -181,8 +182,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return false;
       }
 
-      // Valida que el nombre no esté vacío
+      // Valida que el nombre no esté vacío y tenga formato válido
       if (!data.name.trim()) {
+        return false;
+      }
+      if (!isValidName(data.name)) {
         return false;
       }
 
@@ -194,6 +198,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       // Valida que el teléfono esté presente
       if (!data.phone || !data.phone.trim()) {
+        return false;
+      }
+
+      // Valida que la dirección esté presente
+      if (!data.address || !data.address.trim()) {
         return false;
       }
 
