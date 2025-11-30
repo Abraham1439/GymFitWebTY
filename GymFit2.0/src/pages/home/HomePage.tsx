@@ -86,7 +86,7 @@ export const HomePage = () => {
         setFeaturedProducts([]);
       }
     };
-    
+
     loadFeaturedProducts();
   }, []); // Array de dependencias vacío: se ejecuta solo al montar
 
