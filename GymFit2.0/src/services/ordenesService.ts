@@ -35,7 +35,7 @@ export interface CreateOrdenRequest {
 export const ordenesService = {
   async getAll(): Promise<Orden[]> {
     try {
-      return await apiCall<Orden[]>(API_BASE_URLS.ordenes);
+      return await apiCall<Orden[]>(`${API_BASE_URLS.ordenes}/api/v1/ordenes`);
     } catch (error) {
       console.error('Error fetching ordenes:', error);
       return [];
@@ -44,7 +44,7 @@ export const ordenesService = {
 
   async getById(id: number): Promise<Orden | null> {
     try {
-      return await apiCall<Orden>(`${API_BASE_URLS.ordenes}/${id}`);
+      return await apiCall<Orden>(`${API_BASE_URLS.ordenes}/api/v1/ordenes/${id}`);
     } catch (error) {
       console.error('Error fetching orden:', error);
       return null;
@@ -53,7 +53,7 @@ export const ordenesService = {
 
   async getByUsuario(usuarioId: number): Promise<Orden[]> {
     try {
-      return await apiCall<Orden[]>(`${API_BASE_URLS.ordenes}/usuario/${usuarioId}`);
+      return await apiCall<Orden[]>(`${API_BASE_URLS.ordenes}/api/v1/ordenes/usuario/${usuarioId}`);
     } catch (error) {
       console.error('Error fetching ordenes by usuario:', error);
       return [];
@@ -62,7 +62,7 @@ export const ordenesService = {
 
   async getByEstado(estado: string): Promise<Orden[]> {
     try {
-      return await apiCall<Orden[]>(`${API_BASE_URLS.ordenes}/estado/${estado}`);
+      return await apiCall<Orden[]>(`${API_BASE_URLS.ordenes}/api/v1/ordenes/estado/${estado}`);
     } catch (error) {
       console.error('Error fetching ordenes by estado:', error);
       return [];
@@ -71,7 +71,7 @@ export const ordenesService = {
 
   async getItemsByOrden(ordenId: number): Promise<ItemOrden[]> {
     try {
-      return await apiCall<ItemOrden[]>(`${API_BASE_URLS.ordenes}/${ordenId}/items`);
+      return await apiCall<ItemOrden[]>(`${API_BASE_URLS.ordenes}/api/v1/ordenes/${ordenId}/items`);
     } catch (error) {
       console.error('Error fetching items by orden:', error);
       return [];
@@ -80,7 +80,7 @@ export const ordenesService = {
 
   async create(data: CreateOrdenRequest): Promise<Orden | null> {
     try {
-      return await apiCall<Orden>(API_BASE_URLS.ordenes, {
+      return await apiCall<Orden>(`${API_BASE_URLS.ordenes}/api/v1/ordenes`, {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -92,7 +92,7 @@ export const ordenesService = {
 
   async updateEstado(id: number, estado: string): Promise<Orden | null> {
     try {
-      return await apiCall<Orden>(`${API_BASE_URLS.ordenes}/${id}/estado`, {
+      return await apiCall<Orden>(`${API_BASE_URLS.ordenes}/api/v1/ordenes/${id}/estado`, {
         method: 'PUT',
         body: JSON.stringify({ estado }),
       });
@@ -104,7 +104,7 @@ export const ordenesService = {
 
   async delete(id: number): Promise<boolean> {
     try {
-      await apiCall(`${API_BASE_URLS.ordenes}/${id}`, {
+      await apiCall(`${API_BASE_URLS.ordenes}/api/v1/ordenes/${id}`, {
         method: 'DELETE',
       });
       return true;

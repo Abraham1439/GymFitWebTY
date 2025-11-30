@@ -18,7 +18,7 @@ export interface AddItemRequest {
 export const carritoService = {
   async getCarritoByUsuario(usuarioId: number): Promise<ItemCarrito[]> {
     try {
-      return await apiCall<ItemCarrito[]>(`${API_BASE_URLS.carrito}/usuario/${usuarioId}`);
+      return await apiCall<ItemCarrito[]>(`${API_BASE_URLS.carrito}/api/v1/carrito/usuario/${usuarioId}`);
     } catch (error) {
       console.error('Error fetching carrito:', error);
       return [];
@@ -27,7 +27,7 @@ export const carritoService = {
 
   async addItem(data: AddItemRequest): Promise<ItemCarrito | null> {
     try {
-      return await apiCall<ItemCarrito>(`${API_BASE_URLS.carrito}/agregar`, {
+      return await apiCall<ItemCarrito>(`${API_BASE_URLS.carrito}/api/v1/carrito/agregar`, {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -39,7 +39,7 @@ export const carritoService = {
 
   async updateQuantity(itemId: number, cantidad: number): Promise<ItemCarrito | null> {
     try {
-      return await apiCall<ItemCarrito>(`${API_BASE_URLS.carrito}/item/${itemId}`, {
+      return await apiCall<ItemCarrito>(`${API_BASE_URLS.carrito}/api/v1/carrito/item/${itemId}`, {
         method: 'PUT',
         body: JSON.stringify({ cantidad }),
       });
@@ -51,7 +51,7 @@ export const carritoService = {
 
   async deleteItem(itemId: number): Promise<boolean> {
     try {
-      await apiCall(`${API_BASE_URLS.carrito}/item/${itemId}`, {
+      await apiCall(`${API_BASE_URLS.carrito}/api/v1/carrito/item/${itemId}`, {
         method: 'DELETE',
       });
       return true;
@@ -63,7 +63,7 @@ export const carritoService = {
 
   async deleteItemByProducto(usuarioId: number, productoId: number): Promise<boolean> {
     try {
-      await apiCall(`${API_BASE_URLS.carrito}/usuario/${usuarioId}/producto/${productoId}`, {
+      await apiCall(`${API_BASE_URLS.carrito}/api/v1/carrito/usuario/${usuarioId}/producto/${productoId}`, {
         method: 'DELETE',
       });
       return true;
@@ -75,7 +75,7 @@ export const carritoService = {
 
   async vaciarCarrito(usuarioId: number): Promise<boolean> {
     try {
-      await apiCall(`${API_BASE_URLS.carrito}/usuario/${usuarioId}`, {
+      await apiCall(`${API_BASE_URLS.carrito}/api/v1/carrito/usuario/${usuarioId}`, {
         method: 'DELETE',
       });
       return true;

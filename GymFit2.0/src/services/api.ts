@@ -1,10 +1,10 @@
-// API base URLs for microservices
+// API base URLs Para los microservices
 const API_BASE_URLS = {
-  usuarios: 'http://localhost:8081/api/v1/usuario',
-  carrito: 'http://localhost:8082/api/v1/carrito',
-  productos: 'http://localhost:8083/api/v1/productos',
-  pagos: 'http://localhost:8084/api/v1/pagos',
-  ordenes: 'http://localhost:8085/api/v1/ordenes',
+  usuarios: 'https://pjrm5vf1-8081.brs.devtunnels.ms',
+  carrito: 'https://pjrm5vf1-8082.brs.devtunnels.ms',
+  productos: 'https://pjrm5vf1-8083.brs.devtunnels.ms',
+  pagos: 'https://pjrm5vf1-8084.brs.devtunnels.ms',
+  ordenes: 'https://pjrm5vf1-8085.brs.devtunnels.ms',
 };
 
 // Helper function to make API calls

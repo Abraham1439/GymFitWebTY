@@ -13,7 +13,7 @@ export interface Producto {
 export const productosService = {
   async getAll(): Promise<Producto[]> {
     try {
-      return await apiCall<Producto[]>(API_BASE_URLS.productos);
+      return await apiCall<Producto[]>(`${API_BASE_URLS.productos}/api/v1/productos`);
     } catch (error) {
       console.error('Error fetching productos:', error);
       return [];
@@ -22,7 +22,7 @@ export const productosService = {
 
   async getById(id: number): Promise<Producto | null> {
     try {
-      return await apiCall<Producto>(`${API_BASE_URLS.productos}/${id}`);
+      return await apiCall<Producto>(`${API_BASE_URLS.productos}/api/v1/productos/${id}`);
     } catch (error) {
       console.error('Error fetching producto:', error);
       return null;
@@ -31,7 +31,7 @@ export const productosService = {
 
   async getByCategoria(categoria: string): Promise<Producto[]> {
     try {
-      return await apiCall<Producto[]>(`${API_BASE_URLS.productos}/categoria/${categoria}`);
+      return await apiCall<Producto[]>(`${API_BASE_URLS.productos}/api/v1/productos/categoria/${categoria}`);
     } catch (error) {
       console.error('Error fetching productos by categoria:', error);
       return [];
@@ -40,7 +40,7 @@ export const productosService = {
 
   async search(nombre: string): Promise<Producto[]> {
     try {
-      return await apiCall<Producto[]>(`${API_BASE_URLS.productos}/buscar?nombre=${encodeURIComponent(nombre)}`);
+      return await apiCall<Producto[]>(`${API_BASE_URLS.productos}/api/v1/productos/buscar?nombre=${encodeURIComponent(nombre)}`);
     } catch (error) {
       console.error('Error searching productos:', error);
       return [];
@@ -49,7 +49,7 @@ export const productosService = {
 
   async create(producto: Partial<Producto>): Promise<Producto | null> {
     try {
-      return await apiCall<Producto>(API_BASE_URLS.productos, {
+      return await apiCall<Producto>(`${API_BASE_URLS.productos}/api/v1/productos`, {
         method: 'POST',
         body: JSON.stringify(producto),
       });
@@ -61,7 +61,7 @@ export const productosService = {
 
   async update(id: number, producto: Partial<Producto>): Promise<Producto | null> {
     try {
-      return await apiCall<Producto>(`${API_BASE_URLS.productos}/${id}`, {
+      return await apiCall<Producto>(`${API_BASE_URLS.productos}/api/v1/productos/${id}`, {
         method: 'PUT',
         body: JSON.stringify(producto),
       });
@@ -73,7 +73,7 @@ export const productosService = {
 
   async delete(id: number): Promise<boolean> {
     try {
-      await apiCall(`${API_BASE_URLS.productos}/${id}`, {
+      await apiCall(`${API_BASE_URLS.productos}/api/v1/productos/${id}`, {
         method: 'DELETE',
       });
       return true;
@@ -85,7 +85,7 @@ export const productosService = {
 
   async updateStock(id: number, cantidad: number): Promise<Producto | null> {
     try {
-      return await apiCall<Producto>(`${API_BASE_URLS.productos}/${id}/stock`, {
+      return await apiCall<Producto>(`${API_BASE_URLS.productos}/api/v1/productos/${id}/stock`, {
         method: 'PUT',
         body: JSON.stringify({ cantidad }),
       });

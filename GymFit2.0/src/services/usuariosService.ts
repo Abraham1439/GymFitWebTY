@@ -30,7 +30,7 @@ export const usuariosService = {
     try {
       console.log('[usuariosService] Attempting login for:', data.email);
       
-      const response = await fetch(`${API_BASE_URLS.usuarios}/login`, {
+      const response = await fetch(`${API_BASE_URLS.usuarios}/api/v1/usuario/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ export const usuariosService = {
     try {
       console.log('[usuariosService] Registering:', data);
       const usuario = await apiCall<Usuario>(
-        `${API_BASE_URLS.usuarios}/register`,
+        `${API_BASE_URLS.usuarios}/api/v1/usuario/register`,
         {
           method: 'POST',
           body: JSON.stringify(data),
@@ -94,7 +94,7 @@ export const usuariosService = {
   async getUsuarioByEmail(email: string): Promise<Usuario | null> {
     try {
       console.log('[usuariosService] Fetching user by email:', email);
-      const usuario = await apiCall<Usuario>(`${API_BASE_URLS.usuarios}/users/email/${encodeURIComponent(email)}`);
+      const usuario = await apiCall<Usuario>(`${API_BASE_URLS.usuarios}/api/v1/usuario/users/email/${encodeURIComponent(email)}`);
       console.log('[usuariosService] User found:', usuario);
       return usuario;
     } catch (error) {
@@ -105,7 +105,7 @@ export const usuariosService = {
 
   async getUsuarioById(id: number): Promise<Usuario | null> {
     try {
-      return await apiCall<Usuario>(`${API_BASE_URLS.usuarios}/users/${id}`);
+      return await apiCall<Usuario>(`${API_BASE_URLS.usuarios}/api/v1/usuario/users/${id}`);
     } catch (error) {
       console.error('Error fetching usuario:', error);
       return null;
@@ -114,7 +114,7 @@ export const usuariosService = {
 
   async getAllUsuarios(): Promise<Usuario[]> {
     try {
-      return await apiCall<Usuario[]>(`${API_BASE_URLS.usuarios}/users`);
+      return await apiCall<Usuario[]>(`${API_BASE_URLS.usuarios}/api/v1/usuario/users`);
     } catch (error) {
       console.error('Error fetching usuarios:', error);
       return [];

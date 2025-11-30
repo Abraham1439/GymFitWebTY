@@ -22,7 +22,7 @@ export interface CreatePagoRequest {
 export const pagosService = {
   async getAll(): Promise<Pago[]> {
     try {
-      return await apiCall<Pago[]>(API_BASE_URLS.pagos);
+      return await apiCall<Pago[]>(`${API_BASE_URLS.pagos}/api/v1/pagos`);
     } catch (error) {
       console.error('Error fetching pagos:', error);
       return [];
@@ -31,7 +31,7 @@ export const pagosService = {
 
   async getById(id: number): Promise<Pago | null> {
     try {
-      return await apiCall<Pago>(`${API_BASE_URLS.pagos}/${id}`);
+      return await apiCall<Pago>(`${API_BASE_URLS.pagos}/api/v1/pagos/${id}`);
     } catch (error) {
       console.error('Error fetching pago:', error);
       return null;
@@ -40,7 +40,7 @@ export const pagosService = {
 
   async getByUsuario(usuarioId: number): Promise<Pago[]> {
     try {
-      return await apiCall<Pago[]>(`${API_BASE_URLS.pagos}/usuario/${usuarioId}`);
+      return await apiCall<Pago[]>(`${API_BASE_URLS.pagos}/api/v1/pagos/usuario/${usuarioId}`);
     } catch (error) {
       console.error('Error fetching pagos by usuario:', error);
       return [];
@@ -49,7 +49,7 @@ export const pagosService = {
 
   async getByOrden(ordenId: number): Promise<Pago[]> {
     try {
-      return await apiCall<Pago[]>(`${API_BASE_URLS.pagos}/orden/${ordenId}`);
+      return await apiCall<Pago[]>(`${API_BASE_URLS.pagos}/api/v1/pagos/orden/${ordenId}`);
     } catch (error) {
       console.error('Error fetching pagos by orden:', error);
       return [];
@@ -58,7 +58,7 @@ export const pagosService = {
 
   async getByEstado(estado: string): Promise<Pago[]> {
     try {
-      return await apiCall<Pago[]>(`${API_BASE_URLS.pagos}/estado/${estado}`);
+      return await apiCall<Pago[]>(`${API_BASE_URLS.pagos}/api/v1/pagos/estado/${estado}`);
     } catch (error) {
       console.error('Error fetching pagos by estado:', error);
       return [];
@@ -67,7 +67,7 @@ export const pagosService = {
 
   async create(data: CreatePagoRequest): Promise<Pago | null> {
     try {
-      return await apiCall<Pago>(API_BASE_URLS.pagos, {
+      return await apiCall<Pago>(`${API_BASE_URLS.pagos}/api/v1/pagos`, {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -79,7 +79,7 @@ export const pagosService = {
 
   async updateEstado(id: number, estado: string): Promise<Pago | null> {
     try {
-      return await apiCall<Pago>(`${API_BASE_URLS.pagos}/${id}/estado`, {
+      return await apiCall<Pago>(`${API_BASE_URLS.pagos}/api/v1/pagos/${id}/estado`, {
         method: 'PUT',
         body: JSON.stringify({ estado }),
       });
@@ -91,7 +91,7 @@ export const pagosService = {
 
   async delete(id: number): Promise<boolean> {
     try {
-      await apiCall(`${API_BASE_URLS.pagos}/${id}`, {
+      await apiCall(`${API_BASE_URLS.pagos}/api/v1/pagos/${id}`, {
         method: 'DELETE',
       });
       return true;
