@@ -57,6 +57,7 @@ export const RegisterPage = () => {
     password?: string;
     confirmPassword?: string;
     phone?: string;
+    address?: string;
   }>({});
 
   /**
