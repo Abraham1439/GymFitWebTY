@@ -75,13 +75,14 @@ export const isValidPhone = (phone: string): boolean => {
   if (!phone || phone.trim().length === 0) {
     return false;
   }
-  // Validar formato: 8-15 dígitos, puede empezar con +
-  // ^\\+?[0-9]{8,15}$: Patrón regex que valida formato de teléfono
+  // Validar formato: Debe empezar con + seguido de exactamente 11 dígitos (total 12 caracteres)
+  // Ejemplo válido: +56912345678
+  // ^\+[0-9]{11}$: Patrón regex que valida formato de teléfono
   // ^: Inicio de la cadena
-  // \\+?: El símbolo + es opcional (0 o 1 vez)
-  // [0-9]{8,15}: Entre 8 y 15 dígitos
+  // \\+: El símbolo + es obligatorio (debe empezar con +)
+  // [0-9]{11}: Exactamente 11 dígitos después del +
   // $: Fin de la cadena
-  const phoneRegex = /^\+?[0-9]{8,15}$/;
+  const phoneRegex = /^\+[0-9]{11}$/;
   return phoneRegex.test(phone.trim());
 };
 

@@ -120,7 +120,7 @@ export const RegisterPage = () => {
       if (!value.trim()) {
         errors.phone = 'El teléfono es obligatorio';
       } else if (!isValidPhone(value)) {
-        errors.phone = 'Formato inválido. Debe tener 8-15 dígitos (ejemplo: +56912345678 o 912345678)';
+        errors.phone = 'Formato inválido. Debe empezar con + seguido de 11 dígitos (ejemplo: +56912345678)';
       } else {
         delete errors.phone;
       }
@@ -196,7 +196,7 @@ export const RegisterPage = () => {
       return;
     }
     if (!isValidPhone(formData.phone)) {
-      setError('El teléfono debe tener formato válido: 8-15 dígitos (ejemplo: +56912345678 o 912345678)');
+      setError('El teléfono debe tener formato válido: debe empezar con + seguido de 11 dígitos (ejemplo: +56912345678)');
       return;
     }
 
@@ -384,7 +384,7 @@ export const RegisterPage = () => {
               <Form.Control
                 type="tel"                      // type: Tipo de input HTML5 (teléfono)
                 name="phone"                    // name: Nombre del campo
-                placeholder="Ej: +56912345678 o 912345678" // placeholder: Texto de ejemplo con formato
+                placeholder="Ej: +56912345678" // placeholder: Texto de ejemplo con formato
                 value={formData.phone}           // value: Valor controlado del input
                 onChange={handleChange}          // onChange: Evento que se ejecuta al cambiar
                 onBlur={(e) => validateField('phone', e.target.value)} // onBlur: Valida al salir del campo
@@ -393,7 +393,7 @@ export const RegisterPage = () => {
               />
               {/* Form.Text: Texto de ayuda debajo del campo */}
               <Form.Text className="text-muted">
-                Formato: 8-15 dígitos. Puede empezar con + (ejemplo: +56912345678 o 912345678)
+                Formato: Debe empezar con + seguido de 11 dígitos (ejemplo: +56912345678)
               </Form.Text>
               {/* Form.Control.Feedback: Muestra mensaje de error */}
               {fieldErrors.phone && (
