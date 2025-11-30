@@ -7,9 +7,7 @@ import { HomePage } from '../pages/home/HomePage';
 import { LoginPage, RegisterPage } from '../pages/auth';
 import { StorePage, ProductDetailPage } from '../pages/store';
 import { CartPage } from '../pages/cart';
-import { TrainersPage, TrainerDetailPage } from '../pages/trainers';
 import { UserPanel } from '../pages/user';
-import { TrainerPanel } from '../pages/trainer';
 import { AdminPanel } from '../pages/admin';
 
 // Componente de rutas de la aplicación
@@ -48,25 +46,10 @@ export const AppRoutes = () => {
       path: '/cart',              // path: Ruta para carrito
       element: <CartPage />       // element: Componente de página de carrito
     },
-    // Ruta para la página de entrenadores
-    {
-      path: '/trainers',          // path: Ruta para entrenadores
-      element: <TrainersPage />   // element: Componente de página de entrenadores
-    },
-    // Ruta para la página de detalles de entrenador
-    {
-      path: '/trainer/:id',       // path: Ruta dinámica para detalles de entrenador
-      element: <TrainerDetailPage /> // element: Componente de página de detalles
-    },
     // Ruta para el panel de usuario
     {
       path: '/user-panel',        // path: Ruta para panel de usuario
       element: <UserPanel />      // element: Componente de panel de usuario
-    },
-    // Ruta para el panel de entrenador
-    {
-      path: '/trainer-panel',    // path: Ruta para panel de entrenador
-      element: <TrainerPanel />  // element: Componente de panel de entrenador
     },
     // Ruta para el panel de administrador
     {

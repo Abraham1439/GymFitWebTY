@@ -37,8 +37,6 @@ export const ProtectedRoute = ({
         // Redirigir según el rol del usuario
         if (userRole === UserRole.ADMIN) {
           return <Navigate to="/admin" replace />;
-        } else if (userRole === UserRole.TRAINER) {
-          return <Navigate to="/trainer-panel" replace />;
         } else {
           return <Navigate to="/user-panel" replace />;
         }
@@ -49,8 +47,6 @@ export const ProtectedRoute = ({
         // Redirigir según el rol del usuario
         if (userRole === UserRole.ADMIN) {
           return <Navigate to="/admin" replace />;
-        } else if (userRole === UserRole.TRAINER) {
-          return <Navigate to="/trainer-panel" replace />;
         } else {
           return <Navigate to="/user-panel" replace />;
         }

@@ -132,8 +132,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         email: usuarioAPI.email,
         password: '', // No guardamos la contraseña en el frontend
         name: usuarioAPI.username,
-        role: usuarioAPI.rol.nombre === 'Administrador' ? UserRole.ADMIN :
-              usuarioAPI.rol.nombre === 'Entrenador' ? UserRole.TRAINER : UserRole.USER,
+        role: usuarioAPI.rol.nombre === 'Administrador' ? UserRole.ADMIN : UserRole.USER,
         createdAt: new Date().toISOString(),
         phone: usuarioAPI.phone,
         address: usuarioAPI.address
@@ -192,7 +191,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       // Valida que el rol no sea ADMIN (solo se puede crear admin manualmente)
       // Solo permite registro como USER: Solo el admin puede asignar otros roles
-      if (data.role === UserRole.ADMIN || data.role === UserRole.TRAINER) {
+      if (data.role === UserRole.ADMIN) {
         return false;
       }
 

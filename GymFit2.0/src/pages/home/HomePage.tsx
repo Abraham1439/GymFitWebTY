@@ -14,7 +14,7 @@ import type { Product } from '../../interfaces/gym.interfaces';
 
 export const HomePage = () => {
   // useNavigate: Hook que retorna una función para navegar programáticamente
-  // Se utiliza para navegar a diferentes secciones de la aplicación (tienda, entrenadores, registro)
+  // Se utiliza para navegar a diferentes secciones de la aplicación (tienda, registro)
   const navigate = useNavigate();
   
   // useAuth: Hook personalizado que retorna los datos de autenticación
@@ -218,7 +218,7 @@ export const HomePage = () => {
 
             {/* Tarjetas de Servicios - Después de Productos Destacados */}
             <Row className="mb-3 mt-3">
-              <Col md={authData.isAuthenticated ? 6 : 4} className="mb-4">
+              <Col md={authData.isAuthenticated ? 12 : 6} className="mb-4">
                 <Card className="h-100 text-center">
                   <Card.Body>
                     <i className="fa-solid fa-shopping-cart fa-3x mb-3" style={{ color: COLORS.COLOR_3 }}></i>
@@ -238,31 +238,15 @@ export const HomePage = () => {
                 </Card>
               </Col>
 
-              <Col md={authData.isAuthenticated ? 6 : 4} className="mb-4">
-                <Card className="h-100 text-center">
-                  <Card.Body>
-                    <i className="fa-solid fa-user-tie fa-3x text-success mb-3"></i>
-                    <Card.Title>Entrenadores Profesionales</Card.Title>
-                    <Card.Text>
-                      Contrata a nuestros entrenadores certificados y personaliza tu rutina.
-                      Obtén asesoramiento profesional para alcanzar tus objetivos.
-                    </Card.Text>
-                    <Button variant="success" onClick={() => navigate('/trainers')}>
-                      Ver Entrenadores
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-
               {/* Solo mostrar "Únete a Nosotros" si el usuario NO está autenticado */}
               {!authData.isAuthenticated && (
-                <Col md={4} className="mb-4">
+                <Col md={6} className="mb-4">
                   <Card className="h-100 text-center">
                     <Card.Body>
                       <i className="fa-solid fa-user-plus fa-3x text-info mb-3"></i>
                       <Card.Title>Únete a Nosotros</Card.Title>
                       <Card.Text>
-                        Regístrate como usuario o entrenador y comienza a disfrutar
+                        Regístrate como usuario y comienza a disfrutar
                         de todos los beneficios que ofrecemos.
                       </Card.Text>
                       <Button variant="info" onClick={() => navigate('/register')}>
@@ -288,11 +272,11 @@ export const HomePage = () => {
                           </li>
                           <li className="mb-2">
                             <i className="fa-solid fa-check text-success me-2"></i>
-                            Entrenadores certificados y profesionales
+                            Amplia variedad de productos para tu entrenamiento
                           </li>
                           <li className="mb-2">
                             <i className="fa-solid fa-check text-success me-2"></i>
-                            Comunicación directa con entrenadores
+                            Sistema de compras simple y seguro
                           </li>
                         </ul>
                       </Col>
@@ -300,15 +284,15 @@ export const HomePage = () => {
                         <ul className="list-unstyled">
                           <li className="mb-2">
                             <i className="fa-solid fa-check text-success me-2"></i>
-                            Sistema de compras simple y seguro
-                          </li>
-                          <li className="mb-2">
-                            <i className="fa-solid fa-check text-success me-2"></i>
                             Panel personalizado según tu rol
                           </li>
                           <li className="mb-2">
                             <i className="fa-solid fa-check text-success me-2"></i>
                             Gestión completa de usuarios y productos
+                          </li>
+                          <li className="mb-2">
+                            <i className="fa-solid fa-check text-success me-2"></i>
+                            Carrito de compras integrado
                           </li>
                         </ul>
                       </Col>

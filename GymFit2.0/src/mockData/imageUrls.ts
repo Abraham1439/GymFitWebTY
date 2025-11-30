@@ -1,5 +1,5 @@
 // URLs de imágenes para productos del proyecto GymFitWeb
-// Este archivo centraliza todas las URLs de imágenes de productos y entrenadores utilizadas en la aplicación
+// Este archivo centraliza todas las URLs de imágenes de productos utilizadas en la aplicación
 
 /**
  * URLs de imágenes para productos
@@ -18,14 +18,5 @@ export const PRODUCT_IMAGES = {
   // Imagen por defecto para productos que no coinciden con ninguna categoría
   DEFAULT: 'https://via.placeholder.com/300x300?text=Producto',
   
-} as const;
-
-/**
- * URLs de imágenes para entrenadores
- */
-export const TRAINER_IMAGES = {
-  DEFAULT: 'https://cdn.shopify.com/s/files/1/0032/5736/8611/files/HanyRambod_1080_480x480.jpg?v=1566268070',
-  HANY_RAMBOD: 'https://cdn.shopify.com/s/files/1/0032/5736/8611/files/HanyRambod_1080_480x480.jpg?v=1566268070',
-  CARLOS: 'https://fivestarsfitness.com/wp-content/uploads/Preguntas-que-debe-hacer-un-entrenador-personal.jpg',
 } as const;
 

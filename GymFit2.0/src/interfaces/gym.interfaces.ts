@@ -2,8 +2,7 @@
 // Objeto constante: Define un conjunto de constantes con nombre (compatible con erasableSyntaxOnly)
 export const UserRole = {
   ADMIN: 'admin',        // Rol de administrador: puede gestionar usuarios
-  USER: 'user',          // Rol de usuario: puede comprar productos y contratar entrenadores
-  TRAINER: 'trainer'     // Rol de entrenador: puede responder a usuarios y ver sus clientes
+  USER: 'user'           // Rol de usuario: puede comprar productos
 } as const;
 
 // Tipo derivado del objeto constante para usar como tipo
@@ -16,7 +15,7 @@ export interface User {
   email: string;                 // Correo electrónico del usuario (usado para login)
   password: string;               // Contraseña del usuario (en producción debería estar hasheada)
   name: string;                  // Nombre completo del usuario
-  role: UserRole;                // Rol del usuario (admin, user, trainer)
+  role: UserRole;                // Rol del usuario (admin, user)
   createdAt: string;             // Fecha de creación del usuario (ISO string)
   phone?: string;                // Número de teléfono opcional
   address?: string;              // Dirección opcional del usuario
@@ -35,21 +34,6 @@ export interface Product {
   createdAt: string;             // Fecha de creación del producto (ISO string)
 }
 
-// Interfaz que define la estructura de un entrenador
-// Interface: Define la forma de los objetos de entrenador
-export interface Trainer {
-  id: string;                    // Identificador único del entrenador
-  userId: string;                // ID del usuario que es entrenador (referencia a User)
-  name: string;                  // Nombre del entrenador
-  specialization: string;        // Especialización del entrenador (ej: "Fuerza", "Cardio")
-  experience: number;            // Años de experiencia
-  price: number;                // Precio por hora o mes de entrenamiento
-  description: string;           // Descripción del entrenador
-  rating: number;               // Calificación promedio (0-5)
-  image: string;                // URL o ruta de la imagen del entrenador
-  available: boolean;           // Disponibilidad del entrenador
-}
-
 // Interfaz que define la estructura de una compra de producto
 // Interface: Define la forma de los objetos de compra
 export interface Purchase {
@@ -60,28 +44,6 @@ export interface Purchase {
   total: number;                 // Precio total de la compra (price * quantity)
   date: string;                  // Fecha de la compra (ISO string)
   status: 'pending' | 'completed' | 'cancelled'; // Estado de la compra
-}
-
-// Interfaz que define la estructura de una contratación de entrenador
-// Interface: Define la forma de los objetos de contratación
-export interface TrainerHire {
-  id: string;                    // Identificador único de la contratación
-  userId: string;                // ID del usuario que contrata
-  trainerId: string;             // ID del entrenador contratado
-  startDate: string;             // Fecha de inicio del entrenamiento (ISO string)
-  endDate?: string;              // Fecha de fin del entrenamiento (opcional, ISO string)
-  status: 'active' | 'completed' | 'cancelled'; // Estado de la contratación
-  messages: Message[];           // Array de mensajes entre usuario y entrenador
-}
-
-// Interfaz que define la estructura de un mensaje
-// Interface: Define la forma de los objetos de mensaje
-export interface Message {
-  id: string;                    // Identificador único del mensaje
-  senderId: string;              // ID del usuario que envía el mensaje
-  senderName: string;            // Nombre del remitente
-  content: string;               // Contenido del mensaje
-  timestamp: string;             // Fecha y hora del mensaje (ISO string)
 }
 
 // Interfaz que define los datos de autenticación
@@ -98,7 +60,7 @@ export interface RegisterData {
   password: string;              // Contraseña del nuevo usuario
   confirmPassword: string;       // Confirmación de la contraseña
   name: string;                  // Nombre del nuevo usuario
-  role: UserRole;                // Rol seleccionado (solo USER o TRAINER, no ADMIN)
+  role: UserRole;                // Rol seleccionado (solo USER, no ADMIN)
   phone?: string;                // Teléfono opcional
   address?: string;              // Dirección opcional
 }

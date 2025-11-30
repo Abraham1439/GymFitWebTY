@@ -44,11 +44,9 @@ export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
         'store': 'Tienda',
         'cart': 'Carrito',
         'product': 'Detalle del Producto',
-        'trainers': 'Entrenadores',
         'login': 'Iniciar Sesion',
         'register': 'Registrarse',
         'user-panel': 'Mi Panel',
-        'trainer-panel': 'Panel de Entrenador',
         'admin': 'Panel de Administracion'
       };
 

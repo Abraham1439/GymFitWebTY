@@ -10,12 +10,11 @@ import { getFromLocalStorage, saveToLocalStorage, formatDate, generateId } from 
 // Importación de servicios API
 import { productosService } from '../../services/productosService';
 // Importación de tipos e interfaces
-import type { User, Trainer, Product } from '../../interfaces/gym.interfaces';
+import type { User, Product } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
 
 // Constantes para las claves de localStorage
 const STORAGE_KEY_USERS = 'gymUsers';          // Clave para almacenar usuarios
-const STORAGE_KEY_TRAINERS = 'gymTrainers';    // Clave para almacenar entrenadores
 // NOTA: Los productos ahora se guardan en el microservicio de Productos, no en localStorage
 
 // Componente de panel de administrador
@@ -212,38 +211,6 @@ export const AdminPanel = () => {
       // Guarda los usuarios actualizados en localStorage
       saveToLocalStorage(STORAGE_KEY_USERS, updatedUsers);
 
-      // Si el rol cambió a TRAINER, crea el perfil de entrenador
-      const updatedUser = updatedUsers.find((u) => u.id === selectedUser.id);
-      if (updatedUser && editFormData.role === UserRole.TRAINER && selectedUser.role !== UserRole.TRAINER) {
-        // Obtiene todos los entrenadores
-        const trainers = getFromLocalStorage<Trainer[]>(STORAGE_KEY_TRAINERS) || [];
-        
-        // Verifica si ya existe un perfil de entrenador para este usuario
-        const existingTrainer = trainers.find((t) => t.userId === updatedUser.id);
-        
-        // Si no existe, crea un nuevo perfil de entrenador
-        if (!existingTrainer) {
-          const newTrainer: Trainer = {
-            id: generateId(),                    // Genera un ID único
-            userId: updatedUser.id,              // ID del usuario entrenador
-            name: updatedUser.name,              // Nombre del entrenador
-            specialization: 'General',           // Especialización por defecto
-            experience: 0,                       // Años de experiencia (0 por defecto)
-            price: 0,                            // Precio por hora (0 por defecto)
-            description: 'Entrenador asignado por administrador', // Descripción
-            rating: 0,                          // Calificación inicial (0)
-            image: 'https://via.placeholder.com/300x300?text=Trainer', // Imagen placeholder
-            available: true                      // Disponible por defecto
-          };
-          
-          // Agrega el nuevo entrenador al array
-          trainers.push(newTrainer);
-          
-          // Guarda los entrenadores actualizados en localStorage
-          saveToLocalStorage(STORAGE_KEY_TRAINERS, trainers);
-        }
-      }
-
       // Actualiza el estado local
       setUsers(updatedUsers);
 
@@ -326,8 +293,6 @@ export const AdminPanel = () => {
         return 'Administrador';
       case UserRole.USER:
         return 'Usuario';
-      case UserRole.TRAINER:
-        return 'Entrenador';
       default:
         return 'Desconocido';
     }
@@ -667,8 +632,6 @@ export const AdminPanel = () => {
                             bg={
                               user.role === UserRole.ADMIN
                                 ? 'danger'
-                                : user.role === UserRole.TRAINER
-                                ? 'primary'
                                 : 'success'
                             }
                           >
@@ -1102,7 +1065,6 @@ export const AdminPanel = () => {
                   >
                     {/* option: Elemento HTML para opciones del select */}
                     <option value={UserRole.USER}>Usuario</option>
-                    <option value={UserRole.TRAINER}>Entrenador</option>
                     <option value={UserRole.ADMIN}>Administrador</option>
                   </Form.Select>
                 </Form.Group>

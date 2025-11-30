@@ -140,8 +140,6 @@ export const LoginPage = () => {
         // Si el login es exitoso, redirige según el rol del usuario
         if (user.role === UserRole.ADMIN) {
           navigate('/admin');
-        } else if (user.role === UserRole.TRAINER) {
-          navigate('/trainer-panel');
         } else {
           navigate('/user-panel');
         }

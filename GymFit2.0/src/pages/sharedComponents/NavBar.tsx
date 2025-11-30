@@ -92,18 +92,6 @@ export const NavBar = () => {
               Tienda
             </Nav.Link>
 
-            {/* Link a entrenadores (visible para todos) */}
-            <Nav.Link
-              href="#"
-              active={location.pathname === '/trainers'} // active: Muestra como activo si está en la ruta de entrenadores
-              className="text-white"
-              onClick={() => navigate('/trainers')} // onClick: Navega a la página de entrenadores
-            >
-              {/* Icono de Font Awesome */}
-              <i className="fa-solid fa-user-tie me-1"></i>
-              Entrenadores
-            </Nav.Link>
-
             {/* Condicional: Si el usuario está autenticado, muestra opciones según su rol */}
             {authData.isAuthenticated && (
               <>
@@ -118,20 +106,6 @@ export const NavBar = () => {
                     {/* Icono de Font Awesome */}
                     <i className="fa-solid fa-user-shield me-1"></i>
                     Panel Admin
-                  </Nav.Link>
-                )}
-
-                {/* Condicional: Si el usuario es TRAINER, muestra panel de entrenador */}
-                {authData.user?.role === UserRole.TRAINER && (
-                  <Nav.Link
-                    href="#"
-                    active={location.pathname === '/trainer-panel'} // active: Muestra como activo si está en la ruta de entrenador
-                    className="text-white"
-                    onClick={() => navigate('/trainer-panel')} // onClick: Navega al panel de entrenador
-                  >
-                    {/* Icono de Font Awesome */}
-                    <i className="fa-solid fa-dumbbell me-1"></i>
-                    Mi Panel
                   </Nav.Link>
                 )}
 
