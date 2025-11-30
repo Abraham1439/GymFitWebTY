@@ -4,12 +4,13 @@ import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
-import { getFromLocalStorage } from '../../helpers';
+// Importación de servicios API
+import { productosService } from '../../services/productosService';
+// Importación de URLs de imágenes
+import { PRODUCT_IMAGES } from '../../mockData';
 // Importación de constantes de colores
 import { COLORS } from '../../constants';
 import type { Product } from '../../interfaces/gym.interfaces';
-
-const STORAGE_KEY_PRODUCTS = 'gymProducts';
 
 export const HomePage = () => {
   // useNavigate: Hook que retorna una función para navegar programáticamente
@@ -28,12 +29,65 @@ export const HomePage = () => {
   // Estado para almacenar los productos destacados que se muestran en la página principal
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
 
+  /**
+   * Función helper para obtener la imagen correcta basada en el nombre del producto
+   * @param productName - Nombre del producto
+   * @returns URL de la imagen correspondiente
+   */
+  const getProductImageUrl = (productName: string): string => {
+    const name = productName.toLowerCase();
+    
+    if (name.includes('cinturón') || name.includes('cinturon')) {
+      return PRODUCT_IMAGES.CINTURON;
+    }
+    if (name.includes('guantes')) {
+      return PRODUCT_IMAGES.GUANTES;
+    }
+    if (name.includes('bandas')) {
+      return PRODUCT_IMAGES.BANDAS;
+    }
+    if (name.includes('proteína') || name.includes('proteina') || name.includes('whey')) {
+      return PRODUCT_IMAGES.PROTEINA;
+    }
+    if (name.includes('creatina')) {
+      return PRODUCT_IMAGES.CREATINA;
+    }
+    if (name.includes('bcaa')) {
+      return PRODUCT_IMAGES.BCAA;
+    }
+    
+    return PRODUCT_IMAGES.DEFAULT;
+  };
+
   // useEffect: Hook de React que ejecuta efectos secundarios
-  // Carga los primeros 3 productos como destacados al montar el componente
+  // Carga los primeros 3 productos desde el microservicio como destacados al montar el componente
   useEffect(() => {
-    const products = getFromLocalStorage<Product[]>(STORAGE_KEY_PRODUCTS) || [];
-    // Toma los primeros 3 productos
-    setFeaturedProducts(products.slice(0, 3));
+    const loadFeaturedProducts = async (): Promise<void> => {
+      try {
+        // Carga los productos desde el microservicio
+        const productos = await productosService.getAll();
+        
+        // Convierte los productos del API al formato del frontend
+        const convertedProducts: Product[] = productos.map(producto => ({
+          id: producto.id.toString(),
+          name: producto.nombre,
+          description: producto.descripcion,
+          price: producto.precio,
+          category: producto.categoria as 'accessory' | 'supplement',
+          image: producto.imagen || getProductImageUrl(producto.nombre),
+          stock: producto.stock,
+          createdAt: new Date().toISOString()
+        }));
+        
+        // Toma los primeros 3 productos como destacados
+        setFeaturedProducts(convertedProducts.slice(0, 3));
+      } catch (error) {
+        console.error('Error loading featured products from API:', error);
+        setFeaturedProducts([]);
+      }
+    };
+    
+    loadFeaturedProducts();
   }, []); // Array de dependencias vacío: se ejecuta solo al montar
 
   return (
