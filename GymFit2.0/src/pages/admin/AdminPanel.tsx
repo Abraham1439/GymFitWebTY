@@ -6,16 +6,15 @@ import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Badge } f
 
 // Importación de hooks y helpers
 import { useAuth } from '../../contexts/AuthContext';
-import { getFromLocalStorage, saveToLocalStorage, formatDate, generateId } from '../../helpers';
+import { formatDate } from '../../helpers';
 // Importación de servicios API
 import { productosService } from '../../services/productosService';
+import { usuariosService } from '../../services/usuariosService';
 // Importación de tipos e interfaces
 import type { User, Product } from '../../interfaces/gym.interfaces';
 import { UserRole } from '../../interfaces/gym.interfaces';
 
-// Constantes para las claves de localStorage
-const STORAGE_KEY_USERS = 'gymUsers';          // Clave para almacenar usuarios
-// NOTA: Los productos ahora se guardan en el microservicio de Productos, no en localStorage
+// NOTA: Los usuarios y productos ahora se guardan en sus respectivos microservicios, no en localStorage
 
 // Componente de panel de administrador
 // Functional Component: Componente funcional de React
@@ -83,21 +82,38 @@ export const AdminPanel = () => {
   // Efecto que se ejecuta al montar el componente para cargar datos iniciales
   // Carga todos los usuarios y productos que el administrador puede gestionar
   useEffect(() => {
-    // Carga los usuarios desde localStorage
+    // Carga los usuarios desde el microservicio
     loadUsers();
     // Carga los productos desde el microservicio
     loadProducts();
   }, []); // Array de dependencias vacío: se ejecuta solo al montar
 
   /**
-   * Carga todos los usuarios desde localStorage
-   * void: Tipo que indica que la función no retorna valor
+   * Carga todos los usuarios desde el microservicio de Usuarios
    */
-  const loadUsers = (): void => {
-    // Obtiene todos los usuarios guardados en localStorage
-    const savedUsers = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
-    // Actualiza el estado con los usuarios
-    setUsers(savedUsers);
+  const loadUsers = async (): Promise<void> => {
+    try {
+      // Carga los usuarios desde el microservicio
+      const usuarios = await usuariosService.getAllUsuarios();
+      
+      // Convierte los usuarios del API al formato del frontend
+      const convertedUsers: User[] = usuarios.map(usuario => ({
+        id: usuario.id.toString(),
+        name: usuario.username,
+        email: usuario.email,
+        password: '', // No se incluye la contraseña por seguridad
+        role: usuario.rol.nombre === 'Administrador' ? UserRole.ADMIN : UserRole.USER,
+        phone: usuario.phone || undefined,
+        address: usuario.address || undefined,
+        createdAt: new Date().toISOString() // El backend no retorna createdAt, usamos fecha actual
+      }));
+      
+      // Actualiza el estado con los usuarios del microservicio
+      setUsers(convertedUsers);
+    } catch (error) {
+      console.error('Error loading users from API:', error);
+      setUsers([]);
+    }
   };
 
   /**
@@ -176,43 +192,36 @@ export const AdminPanel = () => {
   };
 
   /**
-   * Guarda los cambios del usuario editado
+   * Guarda los cambios del usuario editado en el microservicio
    */
-  const saveEdit = (): void => {
+  const saveEdit = async (): Promise<void> => {
     // Verifica que haya un usuario seleccionado y datos del formulario
     if (!selectedUser || !editFormData.name || !editFormData.email) {
       setMessage({ type: 'danger', text: 'Por favor completa todos los campos requeridos' });
-      // setTimeout: Función que ejecuta código después de un tiempo
-      setTimeout(() => setMessage(null), 3000); // Limpia el mensaje después de 3 segundos
-      return;                     // Sale de la función si faltan datos
+      setTimeout(() => setMessage(null), 3000);
+      return;
     }
 
     try {
-      // Obtiene todos los usuarios
-      const allUsers = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+      // Determina el rolId basado en el rol seleccionado
+      const rolId = editFormData.role === UserRole.ADMIN ? 1 : 2; // 1 = Admin, 2 = Usuario
+      const usuarioId = parseInt(selectedUser.id);
 
-      // Actualiza el usuario seleccionado
-      // map: Método de array que crea un nuevo array transformando cada elemento
-      const updatedUsers = allUsers.map((u) => {
-        if (u.id === selectedUser.id) {
-          // Si es el usuario seleccionado, actualiza sus datos
-          return {
-            ...u,                              // Spread operator: copia todas las propiedades
-            name: editFormData.name!,          // Actualiza el nombre (non-null assertion: !)
-            email: editFormData.email!,        // Actualiza el email
-            role: editFormData.role || u.role, // Actualiza el rol (o mantiene el anterior)
-            phone: editFormData.phone,         // Actualiza el teléfono
-            address: editFormData.address      // Actualiza la dirección
-          };
-        }
-        return u;                              // Retorna el usuario sin cambios
+      // Actualiza el usuario en el microservicio
+      const usuarioActualizado = await usuariosService.updateUsuario(usuarioId, {
+        username: editFormData.name,
+        email: editFormData.email,
+        phone: editFormData.phone || '',
+        address: editFormData.address || undefined,
+        rolId: rolId
       });
 
-      // Guarda los usuarios actualizados en localStorage
-      saveToLocalStorage(STORAGE_KEY_USERS, updatedUsers);
+      if (!usuarioActualizado) {
+        throw new Error('No se pudo actualizar el usuario');
+      }
 
-      // Actualiza el estado local
-      setUsers(updatedUsers);
+      // Recarga los usuarios desde el microservicio para actualizar la lista
+      await loadUsers();
 
       // Muestra mensaje de éxito
       setMessage({ type: 'success', text: 'Usuario actualizado correctamente' });
@@ -228,41 +237,39 @@ export const AdminPanel = () => {
     } catch (error) {
       // Manejo de errores
       console.error('Error al actualizar usuario:', error);
-      setMessage({ type: 'danger', text: 'Error al actualizar el usuario' });
+      setMessage({ type: 'danger', text: 'Error al actualizar el usuario. Verifica que el microservicio esté disponible.' });
       setTimeout(() => setMessage(null), 3000);
     }
   };
 
   /**
-   * Elimina un usuario
+   * Elimina un usuario del microservicio
    */
-  const confirmDelete = (): void => {
+  const confirmDelete = async (): Promise<void> => {
     // Verifica que haya un usuario seleccionado
     if (!selectedUser) {
-      return;                     // Sale de la función si no hay usuario
+      return;
     }
 
     // Previene la eliminación del propio usuario administrador
     if (selectedUser.id === authData.user?.id) {
       setMessage({ type: 'danger', text: 'No puedes eliminar tu propia cuenta' });
       setTimeout(() => setMessage(null), 3000);
-      setShowDeleteModal(false); // Cierra el modal
+      setShowDeleteModal(false);
       return;
     }
 
     try {
-      // Obtiene todos los usuarios
-      const allUsers = getFromLocalStorage<User[]>(STORAGE_KEY_USERS) || [];
+      // Elimina el usuario del microservicio
+      const usuarioId = parseInt(selectedUser.id);
+      const eliminado = await usuariosService.deleteUsuario(usuarioId);
 
-      // Filtra el usuario eliminado
-      // filter: Método de array que retorna elementos que cumplen una condición
-      const updatedUsers = allUsers.filter((u) => u.id !== selectedUser.id);
+      if (!eliminado) {
+        throw new Error('No se pudo eliminar el usuario');
+      }
 
-      // Guarda los usuarios actualizados en localStorage
-      saveToLocalStorage(STORAGE_KEY_USERS, updatedUsers);
-
-      // Actualiza el estado local
-      setUsers(updatedUsers);
+      // Recarga los usuarios desde el microservicio para actualizar la lista
+      await loadUsers();
 
       // Muestra mensaje de éxito
       setMessage({ type: 'success', text: 'Usuario eliminado correctamente' });
@@ -276,7 +283,7 @@ export const AdminPanel = () => {
     } catch (error) {
       // Manejo de errores
       console.error('Error al eliminar usuario:', error);
-      setMessage({ type: 'danger', text: 'Error al eliminar el usuario' });
+      setMessage({ type: 'danger', text: 'Error al eliminar el usuario. Verifica que el microservicio esté disponible.' });
       setTimeout(() => setMessage(null), 3000);
     }
   };

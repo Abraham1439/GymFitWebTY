@@ -120,5 +120,29 @@ export const usuariosService = {
       return [];
     }
   },
+
+  async updateUsuario(id: number, data: Partial<RegisterRequest> & { rolId?: number }): Promise<Usuario | null> {
+    try {
+      return await apiCall<Usuario>(`${API_BASE_URLS.usuarios}/api/v1/usuario/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.error('Error updating usuario:', error);
+      return null;
+    }
+  },
+
+  async deleteUsuario(id: number): Promise<boolean> {
+    try {
+      await apiCall(`${API_BASE_URLS.usuarios}/api/v1/usuario/users/${id}`, {
+        method: 'DELETE',
+      });
+      return true;
+    } catch (error) {
+      console.error('Error deleting usuario:', error);
+      return false;
+    }
+  },
 };
 
