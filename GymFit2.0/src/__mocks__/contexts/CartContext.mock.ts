@@ -1,5 +1,5 @@
 // Mock para CartContext
-import { Producto } from '../../interfaces/gym.interfaces';
+import type { Product } from '../../interfaces/gym.interfaces';
 
 const mockCartItems = [
   {
@@ -10,15 +10,16 @@ const mockCartItems = [
       price: 50000,
       stock: 15,
       category: 'supplement',
-      image: 'https://example.com/whey.jpg'
-    } as Producto,
+      image: 'https://example.com/whey.jpg',
+      createdAt: new Date().toISOString()
+    } as Product,
     quantity: 2
   }
 ];
 
 export const mockCartContext = {
   cartItems: mockCartItems,
-  addToCart: async (product: Producto, quantity: number = 1): Promise<void> => {
+  addToCart: async (product: Product, quantity: number = 1): Promise<void> => {
     // Mock add to cart
   },
   removeFromCart: async (productId: string): Promise<void> => {

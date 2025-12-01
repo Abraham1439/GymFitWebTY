@@ -11,7 +11,7 @@ import {
   passwordsMatch,
   isValidPhone,
   formatDate
-} from '@/helpers/validation.helpers';
+} from '../../../src/helpers/validation.helpers';
 
 describe('validation.helpers', () => {
   // describe: Agrupa pruebas relacionadas

@@ -6,7 +6,7 @@ import {
   getFromLocalStorage,
   removeFromLocalStorage,
   clearLocalStorage
-} from '@/helpers/local-storage.helpers';
+} from '../../../src/helpers/local-storage.helpers';
 
 describe('local-storage.helpers', () => {
   // Limpiar localStorage antes de cada prueba

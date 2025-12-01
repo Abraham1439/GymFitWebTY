@@ -1,7 +1,7 @@
 // Pruebas unitarias para capitalize-first.helpers.ts
 
 import { describe, it, expect } from 'vitest';
-import { capitalizeFirst } from '@/helpers/capitalize-first.helpers';
+import { capitalizeFirst } from '../../../src/helpers/capitalize-first.helpers';
 
 describe('capitalize-first.helpers', () => {
   describe('capitalizeFirst', () => {
