@@ -10,6 +10,10 @@ import { CartPage } from '../pages/cart';
 import { UserPanel } from '../pages/user';
 import { AdminPanel } from '../pages/admin';
 
+// Importación de componente de protección de rutas
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { UserRole } from '../interfaces/gym.interfaces';
+
 // Componente de rutas de la aplicación
 // Functional Component: Componente funcional de React
 export const AppRoutes = () => {
@@ -44,17 +48,29 @@ export const AppRoutes = () => {
     // Ruta para la página del carrito
     {
       path: '/cart',              // path: Ruta para carrito
-      element: <CartPage />       // element: Componente de página de carrito
+      element: (
+        <ProtectedRoute requireAuth={true}>
+          <CartPage />
+        </ProtectedRoute>
+      )
     },
-    // Ruta para el panel de usuario
+    // Ruta para el panel de usuario (protegida - requiere autenticación y rol USER)
     {
       path: '/user-panel',        // path: Ruta para panel de usuario
-      element: <UserPanel />      // element: Componente de panel de usuario
+      element: (
+        <ProtectedRoute requiredRole={UserRole.USER}>
+          <UserPanel />
+        </ProtectedRoute>
+      )
     },
-    // Ruta para el panel de administrador
+    // Ruta para el panel de administrador (protegida - requiere autenticación y rol ADMIN)
     {
       path: '/admin',            // path: Ruta para panel de administrador
-      element: <AdminPanel />    // element: Componente de panel de administrador
+      element: (
+        <ProtectedRoute requiredRole={UserRole.ADMIN}>
+          <AdminPanel />
+        </ProtectedRoute>
+      )
     },
     // Ruta comodín para páginas no encontradas (404)
     {
