@@ -12,6 +12,7 @@ import {
   Alert,
   Table,
   Form,
+  Spinner,
 } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
@@ -54,6 +55,9 @@ export const CartPage = () => {
     type: 'success' | 'danger';
     text: string;
   } | null>(null);
+  
+  // Estado para controlar el procesamiento del pago
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   /**
    * Maneja la compra de todos los productos del carrito
@@ -85,6 +89,9 @@ export const CartPage = () => {
       setTimeout(() => setMessage(null), 3000);
       return;
     }
+
+    // Activa el estado de procesamiento
+    setIsProcessing(true);
 
     try {
       const userId = parseInt(authData.user.id);
@@ -150,6 +157,9 @@ export const CartPage = () => {
       console.error('Error al realizar compra:', error);
       setMessage({ type: 'danger', text: 'Error al realizar la compra' });
       setTimeout(() => setMessage(null), 3000);
+    } finally {
+      // Desactiva el estado de procesamiento al finalizar (éxito o error)
+      setIsProcessing(false);
     }
   };
 
@@ -367,13 +377,30 @@ export const CartPage = () => {
                           className="w-100 mb-2"
                           onClick={handleCheckout}
                           disabled={
+                            isProcessing ||
                             !authData.isAuthenticated ||
                             authData.user?.role !== UserRole.USER
                           }
                           style={{ backgroundColor: COLORS.COLOR_3, borderColor: COLORS.COLOR_3 }}
                         >
-                          <i className="fa-solid fa-credit-card me-2"></i>
-                          Finalizar Compra
+                          {isProcessing ? (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                                className="me-2"
+                              />
+                              Procesando pago...
+                            </>
+                          ) : (
+                            <>
+                              <i className="fa-solid fa-credit-card me-2"></i>
+                              Finalizar Compra
+                            </>
+                          )}
                         </Button>
                         {(!authData.isAuthenticated ||
                           authData.user?.role !== UserRole.USER) && (
