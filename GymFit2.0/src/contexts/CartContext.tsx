@@ -6,7 +6,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 import type { CartItem, Product } from '../interfaces/gym.interfaces';
 
 // Importación de servicios API
-import { carritoService, ItemCarrito } from '../services/carritoService';
+import { carritoService } from '../services/carritoService';
 import { productosService } from '../services/productosService';
 import { useAuth } from './AuthContext';
 
@@ -81,9 +81,10 @@ export const CartProvider = ({ children }: CartProviderProps) => {
                 name: producto.nombre,
                 price: producto.precio,
                 description: producto.descripcion,
-                category: producto.categoria,
+                category: producto.categoria as 'accessory' | 'supplement',
                 image: producto.imagen || '',
-                stock: producto.stock
+                stock: producto.stock,
+                createdAt: new Date().toISOString()
               },
               quantity: item.cantidad
             });

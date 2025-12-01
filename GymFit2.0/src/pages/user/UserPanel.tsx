@@ -93,9 +93,10 @@ export const UserPanel = () => {
         name: p.nombre,
         description: p.descripcion,
         price: p.precio,
-        category: p.categoria,
+        category: p.categoria as 'accessory' | 'supplement',
         image: p.imagen || '',
-        stock: p.stock
+        stock: p.stock,
+        createdAt: new Date().toISOString()
       }));
       setProducts(productosFormateados);
     } catch (error) {

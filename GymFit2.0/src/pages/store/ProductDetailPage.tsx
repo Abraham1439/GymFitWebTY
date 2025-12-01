@@ -87,7 +87,7 @@ export const ProductDetailPage = () => {
         name: producto.nombre,
         description: producto.descripcion,
         price: producto.precio,
-        category: producto.categoria,
+        category: producto.categoria as 'accessory' | 'supplement',
         image: producto.imagen || '',
         stock: producto.stock,
         createdAt: new Date().toISOString()

@@ -17,9 +17,9 @@ async function apiCall<T>(
     
     // Obtener token JWT del localStorage si existe
     const token = localStorage.getItem('jwt_token');
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
     
     // Agregar token JWT al header si existe
